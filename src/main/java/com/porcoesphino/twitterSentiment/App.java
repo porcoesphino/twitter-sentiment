@@ -15,7 +15,7 @@ import twitter4j.TwitterStreamFactory;
 public class App {
 	public static void main(String[] args) {
 		
-		String keywords[] = new String[]{"linux, bsd, apple"};
+		String keywords[] = new String[]{"microsoft, apple"};
 		
 		StringBuilder builder = new StringBuilder();
 		for (String ticker: keywords) {
@@ -30,10 +30,8 @@ public class App {
 		
 		TwitterStream twitterStream = new TwitterStreamFactory()
 				.getInstance();
-		StatusListener listener = new SentimentStatusListener();
+		SentimentStatusListener listener = new SentimentStatusListener(keywords);
 		twitterStream.addListener(listener);
-		FilterQuery fq = new FilterQuery();
-		fq.track(keywords);
-		twitterStream.filter(fq);
+		twitterStream.filter(listener.getFilterQuery());
 	}
 }

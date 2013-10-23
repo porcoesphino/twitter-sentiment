@@ -3,6 +3,7 @@
  */
 package com.porcoesphino.twitterSentiment;
 
+import twitter4j.FilterQuery;
 import twitter4j.StallWarning;
 import twitter4j.Status;
 import twitter4j.StatusDeletionNotice;
@@ -15,6 +16,20 @@ import twitter4j.StatusListener;
  */
 public class SentimentStatusListener implements StatusListener {
 	
+	private final String[] tickers;
+	private final FilterQuery filterQuery;
+	
+	public SentimentStatusListener(String[] tickers) {
+		super();
+		this.tickers = tickers;
+		filterQuery = new FilterQuery();
+		filterQuery.track(tickers);
+	}
+	
+	public FilterQuery getFilterQuery() {
+		return filterQuery;
+	}
+
 	/* (non-Javadoc)
 	 * @see twitter4j.StreamListener#onException(java.lang.Exception)
 	 */
