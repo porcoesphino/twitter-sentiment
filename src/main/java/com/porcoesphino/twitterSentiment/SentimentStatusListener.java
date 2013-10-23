@@ -33,7 +33,6 @@ public class SentimentStatusListener implements StatusListener {
 		super();
 		filterQuery = new FilterQuery();
 		filterQuery.track(getFilterFromTickers(tickers));
-		System.out.println(filterQuery);
 	}
 	
 	public FilterQuery getFilterQuery() {
