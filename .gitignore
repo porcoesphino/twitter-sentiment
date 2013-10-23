@@ -1,3 +1,6 @@
+# Private details #
+twitter4j.properties
+
 *.class
 
 # Package Files #
