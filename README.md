@@ -15,4 +15,6 @@ Please go to the [Twitter Developers][] site to get the following:
 
 Add them to the `twitter.properties` file.
 
+You may need to execute `git update-index --assume-unchanged` to ensure this file isn't commited after doing this.
+
 [Twitter Developers]: https://dev.twitter.com/apps
