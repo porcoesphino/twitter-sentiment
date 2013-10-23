@@ -1,7 +1,5 @@
 package com.porcoesphino.twitterSentiment;
 
-import twitter4j.FilterQuery;
-import twitter4j.StatusListener;
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
 
@@ -15,14 +13,14 @@ import twitter4j.TwitterStreamFactory;
 public class App {
 	public static void main(String[] args) {
 		
-		String keywords[] = new String[]{"microsoft, apple"};
+		String tickers[] = new String[]{"microsoft", "apple"};
 		
 		StringBuilder builder = new StringBuilder();
-		for (String ticker: keywords) {
+		for (String t: tickers) {
 			if (builder.length() != 0) {
 				builder.append(", ");
 			}
-			builder.append(ticker);
+			builder.append(t);
 		}
 		builder.insert(0, "Matching: ");
 		System.out.println(builder.toString());
@@ -30,7 +28,7 @@ public class App {
 		
 		TwitterStream twitterStream = new TwitterStreamFactory()
 				.getInstance();
-		SentimentStatusListener listener = new SentimentStatusListener(keywords);
+		SentimentStatusListener listener = new SentimentStatusListener(tickers);
 		twitterStream.addListener(listener);
 		twitterStream.filter(listener.getFilterQuery());
 	}

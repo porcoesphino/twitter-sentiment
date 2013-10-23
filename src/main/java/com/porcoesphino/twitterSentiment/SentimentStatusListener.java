@@ -16,14 +16,24 @@ import twitter4j.StatusListener;
  */
 public class SentimentStatusListener implements StatusListener {
 	
-	private final String[] tickers;
 	private final FilterQuery filterQuery;
+	
+	static String[] getFilterFromTickers(String[] tickers){
+		String[] filterList = new String[tickers.length*3];
+		String[] prefixes = new String[]{"$", "#", "@"};
+		for (int tickerI=0; tickerI<tickers.length; tickerI++) {
+			for (int prefixI=0; prefixI<prefixes.length; prefixI++) {
+				filterList[tickerI*prefixes.length+prefixI] = prefixes[prefixI] + tickers[tickerI];
+			}
+		}
+		return filterList;
+	}
 	
 	public SentimentStatusListener(String[] tickers) {
 		super();
-		this.tickers = tickers;
 		filterQuery = new FilterQuery();
-		filterQuery.track(tickers);
+		filterQuery.track(getFilterFromTickers(tickers));
+		System.out.println(filterQuery);
 	}
 	
 	public FilterQuery getFilterQuery() {
