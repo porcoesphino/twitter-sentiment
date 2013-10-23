@@ -17,4 +17,6 @@ Add them to the `twitter.properties` file.
 
 You may need to execute `git update-index --assume-unchanged` to ensure this file isn't commited after doing this.
 
+To disable logging, this line can be added to the above file `twitter4j.loggerFactory=twitter4j.internal.logging.NullLoggerFactory`
+
 [Twitter Developers]: https://dev.twitter.com/apps
