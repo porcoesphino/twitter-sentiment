@@ -1,5 +1,9 @@
 package com.porcoesphino.twitterSentiment;
 
+import java.nio.charset.Charset;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
 
@@ -11,6 +15,12 @@ import twitter4j.TwitterStreamFactory;
  *
  */
 public class App {
+	
+	public static final Path companiesFilePath = FileSystems.getDefault().getPath(
+			"", "companies.txt");
+	// Don't rely on system having a reasonable charset
+	public static final Charset defaultCharset = Charset.forName("UTF-8");
+	
 	public static void main(String[] args) {
 		
 		String tickers[] = new String[]{"microsoft", "apple"};
