@@ -25,7 +25,8 @@ public enum SandP500Lookup {
 	private static HashMap<String, String> tickerToCompanyName = new HashMap<String, String>();
 	
 	/*
-	 * Parses the S&P 500 company file.
+	 * Parses the S&P 500 company file. Copy and paste from Wikipedia data.
+	 * TODO: URL, update file on startup?
 	 * 
 	 * Assume file contains one tab delimited line per company type:
 	 *   - ticker
@@ -62,19 +63,5 @@ public enum SandP500Lookup {
 	public static String[] getTickers() {
 		Set<String> tickers = tickerToCompanyName.keySet();
 		return tickers.toArray(new String[0]);
-	}
-	
-	public static String[] getNTickers(int N) {
-		Set<String> tickers = tickerToCompanyName.keySet();
-		String[] result = new String[N];
-		int i = 0;
-		for (String t : tickers) {
-			result[i] = t;
-			i++;
-			if (i >= N) {
-				break;
-			}
-		}
-		return result;
 	}
 }
