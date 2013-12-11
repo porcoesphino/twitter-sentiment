@@ -36,9 +36,19 @@ public class App {
 		System.out.println(builder.toString());
 		System.out.println("Starting!");
 		
+		// We can't open more than one stream using Twitter4J so only open
+		// until the 60 char filter limit is reached.
+		// 
+		// https://dev.twitter.com/docs/streaming-apis/parameters#track
+		// TODO: The above
+		// One company has one Listener
+		// Each company puts out it's filter query
+		// These are appended with a comma
+		// Due to rate limits only that many companies can be tracked
+		// There are options to change them
 		TwitterStream twitterStream = new TwitterStreamFactory()
 				.getInstance();
-		SentimentStatusListener listener = new SentimentStatusListener(tickers);
+		TweetListener listener = new TweetListener(tickers);
 		twitterStream.addListener(listener);
 		twitterStream.filter(listener.getFilterQuery());
 	}
