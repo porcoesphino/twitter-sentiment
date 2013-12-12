@@ -3,10 +3,12 @@ package com.porcoesphino.twitterSentiment;
 import java.io.IOException;
 import java.text.ParseException;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-public class SandP500LookupTest extends TestCase {
+public class SandP500LookupTest {
 
+	@Test
 	public void testParsePrices() {
 		try {
 			SandP500Lookup.parsePrices();
@@ -17,14 +19,111 @@ public class SandP500LookupTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testGetTickers() {
 		// The file probably opened if there are 500 items
 		assertEquals(SandP500Lookup.getTickers().length, 500);
 	}
-
-	public void testGetNTickers() {
-		int number = (int) Math.round(Math.random() * 500);
-		assertEquals(SandP500Lookup.getNTickers(number).length, number);
+	
+	public void testRemoveSuffixes(String original, String expected) {
+		String result = SandP500Lookup.stripSuffixesAndPrefixes(original);
+		assertEquals("Didn't remove suffix from [" + original + "] to [" +
+		    expected + "] instead [" + result + "]",
+		    result, expected);
 	}
-
+	
+	@Test
+	public void removingSuffixCompanyA() {
+		testRemoveSuffixes("Abercrombie & Fitch Company A", "Abercrombie & Fitch");
+	}
+	
+	@Test
+	public void removingSuffixCompany() {
+		testRemoveSuffixes("Boeing Company", "Boeing");
+	}
+	
+	@Test
+	public void removingSuffixPlc() {
+		testRemoveSuffixes("Accenture plc", "Accenture");
+	}
+	
+	@Test
+	public void removingSuffixInc() {
+		testRemoveSuffixes("Adobe Systems Inc", "Adobe Systems");
+	}
+	
+	@Test
+	public void removingSuffixCorp() {
+		testRemoveSuffixes("ADT Corp", "ADT");
+	}
+	
+	@Test
+	public void removingSuffixResourcesInc() {
+		testRemoveSuffixes("AGL Resources Inc.", "AGL Resources");
+	}
+	
+	@Test
+	public void removingSuffixCo() {
+		testRemoveSuffixes("American Express Co", "American Express");
+	}
+	
+	@Test
+	public void removingSuffixGroupInc() {
+		testRemoveSuffixes("American Intl Group Inc", "American Intl");
+	}
+	
+	@Test
+	public void removingSuffixCommaIncDot() {
+		testRemoveSuffixes("Analog Devices, Inc.", "Analog Devices");
+	}
+	
+	@Test
+	public void removingSuffixCorporation() {
+		testRemoveSuffixes("BB&T Corporation", "BB&T");
+	}
+	
+	@Test
+	public void removingSuffixCoDotIncDot() {
+		testRemoveSuffixes("Best Buy Co. Inc.", "Best Buy");
+	}
+	
+	@Test
+	public void removingSuffixCorpDot() {
+		testRemoveSuffixes("CBS Corp.", "CBS");
+	}
+	
+	@Test
+	public void removingSuffixGroup() {
+		testRemoveSuffixes("CBRE Group", "CBRE");
+	}
+	
+	@Test
+	public void removingSuffixHoldingsInc() {
+		testRemoveSuffixes("CF Industries Holdings Inc", "CF Industries");
+	}
+	
+	@Test
+	public void removingSuffixFinancial() {
+		testRemoveSuffixes("Cincinnati Financial", "Cincinnati");
+	}
+	
+	@Test
+	public void removingSuffixSystems() {
+		testRemoveSuffixes("Cisco Systems", "Cisco");
+	}
+	
+	@Test
+	public void removingSuffixGroupIncDot() {
+		testRemoveSuffixes("CME Group Inc.", "CME");
+	}
+	
+	@Test
+	public void removingSuffixEnterprises() {
+		testRemoveSuffixes("Coca-Cola Enterprises", "Coca-Cola");
+	}
+	
+	@Test
+	public void removingPrefix() {
+		testRemoveSuffixes("The Coca Cola Company", "Coca Cola");
+	}
 }

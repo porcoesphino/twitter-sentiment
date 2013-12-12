@@ -24,6 +24,43 @@ public enum SandP500Lookup {
 
 	private static HashMap<String, String> tickerToCompanyName = new HashMap<String, String>();
 	
+	private static String stripSuffixes(String companyName) {
+		String[] suffixes = new String[]{" Company A", " Company", " plc", " Inc", " Corp",
+			    " Inc.", " Co", " Group Inc", ", Inc.", " Corporation",
+			    " Co. Inc.", " Corp.", " Group", " Holdings Inc", " Financial",
+			    " Systems", " Group Inc.", " Enterprises"};
+		int smallestIndex = companyName.length();
+		for (String suffix : suffixes) {
+			// Ensure it's a suffix and not in the middle of the string
+			if (companyName.endsWith(suffix)) {
+				int thisIndex = companyName.lastIndexOf(suffix);
+				if (thisIndex < smallestIndex) {
+					smallestIndex = thisIndex;
+				}
+			}
+		}
+		return companyName.substring(0, smallestIndex);
+	}
+	
+	private static String stripPrefixes(String companyName) {
+		String[] prefixes = new String[]{"The "};
+			int largestIndex = 0;
+			for (String prefix : prefixes) {
+				// Ensure it's a suffix and not in the middle of the string
+				if (companyName.startsWith(prefix)) {
+					int thisIndex = companyName.indexOf(prefix) + prefix.length();
+					if (thisIndex > largestIndex) {
+						largestIndex = thisIndex;
+					}
+				}
+			}
+			return companyName.substring(largestIndex, companyName.length());
+	}
+	
+	public static String stripSuffixesAndPrefixes(String companyName) {
+		return stripSuffixes(stripPrefixes(companyName));
+	}
+	
 	/*
 	 * Parses the S&P 500 company file. Copy and paste from Wikipedia data.
 	 * TODO: URL, update file on startup?
@@ -51,7 +88,7 @@ public enum SandP500Lookup {
 				break;
 			}
 			ticker = splitLine[0];
-			company = splitLine[1];
+			company = stripSuffixesAndPrefixes(splitLine[1]);
 			tickerToCompanyName.put(ticker, company);
 			companyCount++;
 		} while (line != null && line.length() != 0);
@@ -63,5 +100,9 @@ public enum SandP500Lookup {
 	public static String[] getTickers() {
 		Set<String> tickers = tickerToCompanyName.keySet();
 		return tickers.toArray(new String[0]);
+	}
+	
+	public static String getCompanyName(String ticker) {
+		return tickerToCompanyName.get(ticker);
 	}
 }

@@ -1,11 +1,16 @@
 package com.porcoesphino.twitterSentiment;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.text.ParseException;
 
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
+
+//TODO: Add a GUI. Mig Layout? Combo box, only 200 companies.
+// This opens a service in another process which is queried
 
 /**
  * The main class to query the twitter server and display popular words in
@@ -20,36 +25,35 @@ public class App {
 			"", "companies.txt");
 	// Don't rely on system having a reasonable charset
 	public static final Charset defaultCharset = Charset.forName("UTF-8");
+	private static CompaniesFilter companiesFilter = new CompaniesFilter();
 	
 	public static void main(String[] args) {
 		
-		String tickers[] = new String[]{"microsoft", "apple"};
-		
-		StringBuilder builder = new StringBuilder();
-		for (String t: tickers) {
-			if (builder.length() != 0) {
-				builder.append(", ");
-			}
-			builder.append(t);
+		try {
+			SandP500Lookup.parsePrices();
+		} catch (IOException e) {
+			System.err.println("Can't read S&P500 file 'companies.txt'!");
+			e.printStackTrace();
+			System.exit(1);
+		} catch (ParseException e) {
+			System.err.println("Can't parse S&P500 file 'companies.txt'!");
+			e.printStackTrace();
+			System.exit(1);
 		}
-		builder.insert(0, "Matching: ");
-		System.out.println(builder.toString());
+		
+		
+		companiesFilter.addCompanies(new String[]{"AAPL", "GOOG", "MSFT"});
+		companiesFilter.addCompanies(SandP500Lookup.getTickers());
+		
 		System.out.println("Starting!");
 		
-		// We can't open more than one stream using Twitter4J so only open
-		// until the 60 char filter limit is reached.
-		// 
-		// https://dev.twitter.com/docs/streaming-apis/parameters#track
+		
 		// TODO: The above
-		// One company has one Listener
-		// Each company puts out it's filter query
-		// These are appended with a comma
-		// Due to rate limits only that many companies can be tracked
-		// There are options to change them
 		TwitterStream twitterStream = new TwitterStreamFactory()
 				.getInstance();
-		TweetListener listener = new TweetListener(tickers);
-		twitterStream.addListener(listener);
-		twitterStream.filter(listener.getFilterQuery());
+		
+		twitterStream.addListener(companiesFilter);
+		
+		twitterStream.filter(companiesFilter.getFilterQuery());
 	}
 }
