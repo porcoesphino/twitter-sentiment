@@ -25,10 +25,22 @@ public enum SandP500Lookup {
 	private static HashMap<String, String> tickerToCompanyName = new HashMap<String, String>();
 	
 	private static String stripSuffixes(String companyName) {
-		String[] suffixes = new String[]{" Company A", " Company", " plc", " Inc", " Corp",
-			    " Inc.", " Co", " Group Inc", ", Inc.", " Corporation",
-			    " Co. Inc.", " Corp.", " Group", " Holdings Inc", " Financial",
-			    " Systems", " Group Inc.", " Enterprises"};
+		String[] safeSuffixes = new String[] {" & Co."};
+		for (String suffix : safeSuffixes) {
+			if (companyName.endsWith(suffix)) {
+				return companyName;
+			}
+		}
+		String[] suffixes = new String[]{" Co", " Co.", " Co. Inc.",
+			    " Company", " Company A", " Corp", " Corp.", " Corporation",
+			    " Enterprises",
+			    " Financial",
+			    " Group", " Group Inc", " Group Inc.", 
+			    " Holdings Inc", 
+			    " Inc"," Inc.", ", Inc.", " Int'l",
+			    " Ltd.",
+			    " plc",
+			    " Systems"};
 		int smallestIndex = companyName.length();
 		for (String suffix : suffixes) {
 			// Ensure it's a suffix and not in the middle of the string
@@ -72,8 +84,8 @@ public enum SandP500Lookup {
 	 */
 	public static void parsePrices() throws IOException, ParseException {
 		BufferedReader pricesFileReader = Files.newBufferedReader(
-		    App.companiesFilePath,
-		    App.defaultCharset);
+		    SentimentServer.companiesFilePath,
+		    SentimentServer.defaultCharset);
 		String ticker;
 		String company;
 		String line;

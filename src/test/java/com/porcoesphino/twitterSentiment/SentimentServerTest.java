@@ -7,17 +7,17 @@ import junit.framework.TestSuite;
 /**
  * Unit test for simple App.
  */
-public class AppTest extends TestCase {
+public class SentimentServerTest extends TestCase {
 	
-	public AppTest(String testName) {
+	public SentimentServerTest(String testName) {
 		super(testName);
 	}
 	
 	public static Test suite() {
-		return new TestSuite(AppTest.class);
+		return new TestSuite(SentimentServerTest.class);
 	}
 
 	public void testSAndPFileExists() {
-		assertTrue(App.companiesFilePath.toFile().exists());
+		assertTrue(SentimentServer.companiesFilePath.toFile().exists());
 	}
 }

@@ -2,6 +2,10 @@
 
 A small project to get the current "sentiment" on some companies based on recent tweets.
 
+With maven installed then after you set up authentication (below) you should be able to execute it with:
+
+> mvn exec:java
+
 ## Authentication ##
 
 Authentication is required for use of the 1.1 Twitter API.

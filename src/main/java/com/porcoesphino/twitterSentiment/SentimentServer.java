@@ -19,7 +19,7 @@ import twitter4j.TwitterStreamFactory;
  * @author bodey.baker@gmail.com
  *
  */
-public class App {
+public class SentimentServer {
 	
 	public static final Path companiesFilePath = FileSystems.getDefault().getPath(
 			"", "companies.txt");

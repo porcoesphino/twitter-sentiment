@@ -123,6 +123,26 @@ public class SandP500LookupTest {
 	}
 	
 	@Test
+	public void removingSuffixLtdDot() {
+		testRemoveSuffixes("Schlumberger Ltd.", "Schlumberger");
+	}
+	
+	@Test
+	public void removingSuffixIntApostropheL() {
+		testRemoveSuffixes("Honeywell Int'l", "Honeywell");
+	}
+	
+	@Test
+	public void keepsSuffixAndCoDot() {
+		testRemoveSuffixes("Lilly (Eli) & Co.", "Lilly (Eli) & Co.");
+	}
+	
+	@Test
+	public void removingSuffixCoDot() {
+		testRemoveSuffixes("Petroleum Co.", "Petroleum");
+	}
+	
+	@Test
 	public void removingPrefix() {
 		testRemoveSuffixes("The Coca Cola Company", "Coca Cola");
 	}
