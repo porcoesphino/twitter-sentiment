@@ -1,19 +1,25 @@
 package com.porcoesphino.twitterSentiment;
 
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JFrame;
 import javax.swing.JButton;
-
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTable;
+import javax.swing.SpinnerNumberModel;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.TreeSet;
 
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
@@ -25,42 +31,57 @@ import net.miginfocom.swing.MigLayout;
 
 public class SentimentViewer {
 
+	public final LinkedList<String> viewingTickers = new LinkedList<String>();
+	
+	public static final int addSorted(String string, LinkedList<String> list) {
+		for (int listIndex = 0; listIndex < list.size(); listIndex++) {
+			String rowTicker =list.get(listIndex);
+			if (rowTicker.compareTo(string) > 0) {
+				list.add(listIndex, string);
+				return listIndex;
+			}
+		}
+		list.add(string);
+		return list.size();
+	}
+	
+	public static final int removeSorted(String string, LinkedList<String> List) {
+		for (int rowIndex = 0; rowIndex < List.size(); rowIndex++) {
+			String rowTicker = List.get(rowIndex);
+			if (rowTicker.compareTo(string) == 0) {
+				List.remove(rowIndex);
+				return rowIndex;
+			}
+		}
+		return -1;
+	}
+	
 	@SuppressWarnings("serial")
 	class TableCompaniesToView extends AbstractTableModel {
 		
-		LinkedList<String> tickers = new LinkedList<String>();
-		HashMap<String, String> tickersToCompanyNames = new HashMap<String, String>();
-		
-		public void addCompany(String ticker, String name) {
-			if (tickersToCompanyNames.containsKey(ticker)) {
+		public void addCompany(String ticker) {
+			if (viewingTickers.contains(ticker)) {
 				return;
 			}
-			tickers.push(ticker);
-			tickersToCompanyNames.put(ticker, name);
-			fireTableRowsInserted(tickers.size(), tickers.size());
+			int insertRow = addSorted(ticker, viewingTickers);
+			fireTableRowsInserted(insertRow, insertRow);
 		}
 		
 		public void removeCompany(String ticker) {
-			tickersToCompanyNames.remove(ticker);
-			for (int rowIndex = 0; rowIndex < tickers.size(); rowIndex++) {
-				String rowTicker = tickers.get(rowIndex);
-				if (rowTicker.compareTo(ticker) == 0) {
-					tickers.remove(rowIndex);
-					fireTableRowsDeleted(rowIndex, rowIndex);
-				}
-			}
+			int removedRow = removeSorted(ticker, viewingTickers);
+			fireTableRowsDeleted(removedRow, removedRow);
 		}
 		
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			String ticker = tickers.get(rowIndex);
+			String ticker = viewingTickers.get(rowIndex);
 			if (columnIndex == 0) {
 				return ticker;
 			}
-			return tickersToCompanyNames.get(ticker);
+			return SandP500Lookup.getCompanyName(ticker);
 		}
 		
 		public int getRowCount() {
-			return tickers.size();
+			return viewingTickers.size();
 		}
 		
 		public int getColumnCount() {
@@ -114,13 +135,11 @@ public class SentimentViewer {
 	}
 
 	@SuppressWarnings("serial")
-	private void setStartingPanel(JPanel panelContent, JButton btnStart) {
+	private void setStartingPanel(final JPanel panelContent, final JButton btnStart, final JSpinner spinnerInterval) {
+		
+		panelContent.removeAll();
 		
 		final TableCompaniesToView companiesToView = new TableCompaniesToView();
-		companiesToView.addCompany("GOOG", "Google");
-		companiesToView.addCompany("AMZN", "Amazon.com");
-		companiesToView.addCompany("AAPL", "Apple");
-		companiesToView.addCompany("MSFT", "Microsoft");
 		
 		JPanel startContent = new JPanel();
 		
@@ -172,8 +191,7 @@ public class SentimentViewer {
 			public void valueChanged(ListSelectionEvent e) {
 				for (int rowIndex : tableAll.getSelectedRows() ) {
 					String ticker = (String) tableAll.getValueAt(rowIndex, 0);
-					String name = (String) tableAll.getValueAt(rowIndex, 1);
-					companiesToView.addCompany(ticker, name);
+					companiesToView.addCompany(ticker);
 				}
 			}
 		});
@@ -195,8 +213,67 @@ public class SentimentViewer {
 		});
 		JScrollPane scrollPaneSelected = new JScrollPane(tableSelected);
 		startContent.add(scrollPaneSelected, new CC().grow().pushX().growX());
+	}
+	
+	@SuppressWarnings("serial")
+	private void setRunningPanel(final JPanel panelContent, final JButton btnStart, final JSpinner spinnerInterval) {
 		
-		btnStart.setText("Start");
+		panelContent.removeAll();
+		
+		JPanel runningContent = new JPanel();
+		
+		runningContent.setLayout(new MigLayout("fill"));
+		panelContent.add(runningContent, new CC().grow().push());
+		
+		JLabel lblSelected = new JLabel("Companies");
+		runningContent.add(lblSelected, new CC().wrap());
+		
+		final JTable tableAll = new JTable();
+		tableAll.setModel(new AbstractTableModel() {
+			
+			public Object getValueAt(int rowIndex, int columnIndex) {
+				String ticker = viewingTickers.get(rowIndex);
+				switch (columnIndex) {
+					case 0:
+						return ticker;
+					case 1:
+						return SandP500Lookup.getCompanyName(ticker);
+					default:
+						return "0";
+				}
+			}
+			
+			public int getRowCount() {
+				return viewingTickers.size();
+			}
+			
+			public int getColumnCount() {
+				return 3;
+			}
+			
+			@Override
+			public String getColumnName(int column) {
+				switch (column) {
+				case 0:
+					return "Ticker";
+				case 1:
+					return "Name";
+				default:
+					return "Count";
+				}
+			}
+		});
+		tableAll.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			
+			public void valueChanged(ListSelectionEvent e) {
+				for (int rowIndex : tableAll.getSelectedRows() ) {
+					String ticker = (String) tableAll.getValueAt(rowIndex, 0);
+					String name = (String) tableAll.getValueAt(rowIndex, 1);
+				}
+			}
+		});
+		JScrollPane scrollPaneAll = new JScrollPane(tableAll);
+		runningContent.add(scrollPaneAll, new CC().grow().pushX().growX());
 	}
 	
 	/**
@@ -209,14 +286,49 @@ public class SentimentViewer {
 		frame.getContentPane().setLayout(
 		    new MigLayout("fill"));
 		
-		JPanel panelContent = new JPanel();
+		final JPanel panelContent = new JPanel();
 		panelContent.setLayout(new MigLayout("fill"));
-		frame.getContentPane().add(panelContent, new CC().dockNorth().grow().push());
+		frame.getContentPane().add(panelContent, new CC().dockNorth().grow().push().wrap());
 		
-		JButton btnStart = new JButton("Start");
-		frame.getContentPane().add(btnStart, new CC().dockSouth());
+		JPanel panelCommon = new JPanel();
+		//TODO: CardLayout?
+		panelContent.setLayout(new MigLayout("fill"));
+		frame.getContentPane().add(panelCommon, new CC().dockSouth().growX().pushX());
 		
-		setStartingPanel(panelContent, btnStart);
+		JLabel labelInterval = new JLabel("Interval (mins)");
+		panelCommon.add(labelInterval);
+		
+		final JSpinner spinnerInterval = new JSpinner(new SpinnerNumberModel(5, .5, 60, 1));
+		panelCommon.add(spinnerInterval, new CC());
+		
+		final String msgStart = "Start";
+		final String msgRunning = "Stop";
+		final JButton btnStart = new JButton(msgStart);
+		panelCommon.add(btnStart, new CC().grow());
+		
+		btnStart.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				if (btnStart.getText().contentEquals(msgStart)) {
+					btnStart.setText(msgRunning);
+					spinnerInterval.setEnabled(false);
+					setRunningPanel(panelContent, btnStart, spinnerInterval);
+				} else if (btnStart.getText().contentEquals(msgRunning)) {
+					btnStart.setText(msgStart);
+					spinnerInterval.setEnabled(true);
+					setStartingPanel(panelContent, btnStart, spinnerInterval);
+				} else {
+					throw new RuntimeException("Button out of Sync. No idea how.");
+				}
+			}
+		});
+		
+		addSorted("GOOG", viewingTickers);
+		addSorted("AMZN", viewingTickers);
+		addSorted("AAPL", viewingTickers);
+		addSorted("MSFT", viewingTickers);
+		
+		setStartingPanel(panelContent, btnStart, spinnerInterval);
 	}
 
 }
