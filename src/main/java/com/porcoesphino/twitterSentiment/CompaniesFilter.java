@@ -23,6 +23,7 @@ import twitter4j.Status;
 public class CompaniesFilter extends AbstractTweetListener{
 	private LinkedList<CompanyTweetParser> companyParsers = new LinkedList<CompanyTweetParser>();
 	private LinkedList<String> trackingFilter = new LinkedList<String>();
+	private int numberOfLimitedStatuses;
 	
 	// Apparently we can open 200 companies or 400 tracking terms.
 	// I didn't see this in the documentation, only a mention of
@@ -63,6 +64,18 @@ public class CompaniesFilter extends AbstractTweetListener{
 		String[] trackingStrings = new String[trackingFilter.size()];
 		trackingStrings = trackingFilter.toArray(trackingStrings);
 		return result.track(trackingStrings);
+	}
+	
+	public int getNumberOfLimitedStatuses() {
+		return numberOfLimitedStatuses;
+	}
+	
+	/* (non-Javadoc)
+	 * @see twitter4j.StatusListener#onTrackLimitationNotice(int)
+	 */
+	//https://dev.twitter.com/docs/streaming-apis/messages#Limit_notices_limit
+	public void onTrackLimitationNotice(int numberOfLimitedStatuses) {
+		this.numberOfLimitedStatuses = numberOfLimitedStatuses;
 	}
 	
 	/* (non-Javadoc)

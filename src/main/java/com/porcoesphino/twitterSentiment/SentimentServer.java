@@ -5,6 +5,8 @@ import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.text.ParseException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
@@ -25,10 +27,33 @@ public class SentimentServer {
 			"", "companies.txt");
 	// Don't rely on system having a reasonable charset
 	public static final Charset defaultCharset = Charset.forName("UTF-8");
-	private static CompaniesFilter companiesFilter = new CompaniesFilter();
+	
+	private CompaniesFilter companiesFilter;
+	private TwitterStream twitterStream;
+	
+	public void startServer(CompaniesFilter companiesFilter) {
+		this.companiesFilter = companiesFilter;
+		twitterStream = new TwitterStreamFactory()
+		.getInstance();
+
+		twitterStream.addListener(companiesFilter);
+
+		twitterStream.filter(companiesFilter.getFilterQuery());
+	}
+	
+	public void stopServer() {
+		twitterStream.cleanUp(); // shutdown internal stream consuming thread
+		twitterStream.shutdown();
+	}
+	
+	public int getNumberOfLimitedStatuses() {
+		if (companiesFilter == null) {
+			return 0;
+		}
+		return companiesFilter.getNumberOfLimitedStatuses();
+	}
 	
 	public static void main(String[] args) {
-		
 		try {
 			SandP500Lookup.parsePrices();
 		} catch (IOException e) {
@@ -40,20 +65,13 @@ public class SentimentServer {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		
-		
+	
+		CompaniesFilter companiesFilter = new CompaniesFilter();
 		companiesFilter.addCompanies(new String[]{"AAPL", "GOOG", "MSFT"});
 		companiesFilter.addCompanies(SandP500Lookup.getTickers());
 		
 		System.out.println("Starting!");
-		
-		
-		// TODO: The above
-		TwitterStream twitterStream = new TwitterStreamFactory()
-				.getInstance();
-		
-		twitterStream.addListener(companiesFilter);
-		
-		twitterStream.filter(companiesFilter.getFilterQuery());
+		final SentimentServer server = new SentimentServer();
+		server.startServer(companiesFilter);
 	}
 }

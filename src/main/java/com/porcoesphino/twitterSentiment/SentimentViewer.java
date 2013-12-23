@@ -33,6 +33,7 @@ public class SentimentViewer {
 
 	private static final long serialVersionUID = 1L;
 	public final LinkedList<String> viewingTickers = new LinkedList<String>();
+	private TableCompaniesViewing tableModelViewing;
 	
 	class Tweet {
 		public final String user;
@@ -70,6 +71,11 @@ public class SentimentViewer {
 	class TableCompaniesViewing extends AbstractTableModel {
 		
 		private static final long serialVersionUID = SentimentViewer.serialVersionUID;
+		private final SentimentServer sentiment;
+		
+		public TableCompaniesViewing(SentimentServer sentiment) {
+			this.sentiment = sentiment;
+		}
 
 		public Object getValueAt(int rowIndex, int columnIndex) {
 			if (rowIndex == viewingTickers.size()) {
@@ -79,7 +85,7 @@ public class SentimentViewer {
 					case 1:
 						return "<html><div style=\"color:red;\">Unmatched Tweets</div></html>";
 					default:
-						return "0";
+						return 0;
 				}
 			}
 			String ticker = viewingTickers.get(rowIndex);
@@ -157,8 +163,7 @@ public class SentimentViewer {
 		}
 	}
 	
-	private TableCompaniesViewing tableModelViewing =
-	    new TableCompaniesViewing();
+	
 	private JFrame frame;
 
 	/**
@@ -275,7 +280,7 @@ public class SentimentViewer {
 		return panelStart;
 	}
 	
-	private JPanel generateRunningPanel() {
+	private JPanel generateRunningPanel(final SentimentServer sentiment) {
 		
 		JPanel panelRunning = new JPanel();
 		panelRunning.setLayout(new MigLayout("fill"));
@@ -287,6 +292,8 @@ public class SentimentViewer {
 		panelRunning.add(lblFocus, new CC().wrap());
 		
 		final JTable tableAll = new JTable();
+		tableModelViewing =
+			    new TableCompaniesViewing(sentiment);
 		tableAll.setModel(tableModelViewing);
 		JScrollPane scrollPaneAll = new JScrollPane(tableAll);
 		panelRunning.add(scrollPaneAll, new CC().grow().pushX().growX());
@@ -308,22 +315,32 @@ public class SentimentViewer {
 
 			public String getElementAt(int index) {
 				Tweet tweet = displayedTweets.get(index);
-				String response = "<html><div style=\"padding:2px;"
+				String html = "<html><div style=\"padding:2px;"
 				    + "background-color:#EDF5F4;color:black\">"
 				    + "<div style=\"padding:2px;font-weight:500;\">"
 				    + "@" + tweet.user
 				    + "</div><p style=\"text-wrap:break-word;\">"
 				    + tweet.message
 				    + "</p></div></html>";
-				return response;
+				return html;
 			}
 		});
 		
 		JScrollPane scrollPaneTweets = new JScrollPane(listTweets);
 		panelRunning.add(scrollPaneTweets, new CC().grow().pushX().growX().wrap());
 		
-		JLabel lblPreMissed = new JLabel("Unreceived tweets due to track limitation: " +
-		    0 + " @ " + new Date());
+		final JLabel lblPreMissed = new JLabel("Unreceived tweets due to track limitation: "
+		    + 0);
+		
+		Timer timerUnreceivedTweets = new Timer();
+		timerUnreceivedTweets.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				lblPreMissed.setText("Unreceived tweets due to track limitation: " +
+					     sentiment.getNumberOfLimitedStatuses());
+			}
+		}, 1000, 1000);
+		
 		panelRunning.add(lblPreMissed, new CC().span(2));
 		
 		tableAll.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -354,6 +371,8 @@ public class SentimentViewer {
 		final String msgStart = "Start";
 		final String msgRunning = "Stop";
 		
+		final SentimentServer sentiment = new SentimentServer();
+		
 		frame = new JFrame();
 		frame.setBounds(100, 100, 800, 600);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -364,7 +383,7 @@ public class SentimentViewer {
 		final CardLayout cardLayout = new CardLayout();
 		panelContent.setLayout(cardLayout);
 		final JPanel panelStarting = generateStartingPanel();
-		final JPanel panelRunning = generateRunningPanel();
+		final JPanel panelRunning = generateRunningPanel(sentiment);
 		panelContent.add(panelStarting, msgStart);
 		panelContent.add(panelRunning, msgRunning);
 		frame.getContentPane().add(panelContent, new CC().dockNorth().grow().push().wrap());
@@ -409,12 +428,23 @@ public class SentimentViewer {
 					}, waitInMilliSeconds);
 					cardLayout.last(panelContent);
 					tableModelViewing.fireTableDataChanged();
+					Timer timer2 = new Timer();
+					timer2.schedule(new TimerTask() {
+						@Override
+						public void run() {
+							tableModelViewing.fireTableDataChanged();
+						}
+					}, 1000,5000);
+					CompaniesFilter companies = new CompaniesFilter();
+					companies.addCompanies(viewingTickers.toArray(new String[] {}));
+					sentiment.startServer(companies);
 				} else if (btnStart.getText().contentEquals(msgRunning)) {
 					btnStart.setText(msgStart);
 					spinnerInterval.setEnabled(true);
 					labelInterval.setToolTipText("");
 					labelInterval.setText("Interval (mins)");
 					cardLayout.first(panelContent);
+					sentiment.stopServer();
 				} else {
 					throw new RuntimeException("Button out of Sync. No idea how.");
 				}

@@ -53,14 +53,4 @@ public abstract class AbstractTweetListener implements StatusListener {
 	public void onStallWarning(StallWarning warning) {
 		System.err.println("Got stall warning:" + warning);
 	}
-
-	/* (non-Javadoc)
-	 * @see twitter4j.StatusListener#onTrackLimitationNotice(int)
-	 */
-	//https://dev.twitter.com/docs/streaming-apis/messages#Limit_notices_limit
-	public void onTrackLimitationNotice(int numberOfLimitedStatuses) {
-		System.err.println("Since opening this connection "
-		    + numberOfLimitedStatuses + " statuses that haven't been read.");
-	}
-
 }
