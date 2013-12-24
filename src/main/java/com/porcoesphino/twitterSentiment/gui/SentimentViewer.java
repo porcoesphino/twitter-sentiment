@@ -1,4 +1,4 @@
-package com.porcoesphino.twitterSentiment;
+package com.porcoesphino.twitterSentiment.gui;
 
 import java.awt.CardLayout;
 import java.awt.EventQueue;
@@ -8,11 +8,9 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.swing.AbstractListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -26,146 +24,24 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 
+import com.porcoesphino.twitterSentiment.SandP500Lookup;
+import com.porcoesphino.twitterSentiment.SentimentServer;
+
 import net.miginfocom.layout.CC;
 import net.miginfocom.swing.MigLayout;
 
 public class SentimentViewer {
 
-	private static final long serialVersionUID = 1L;
-	public final LinkedList<String> viewingTickers = new LinkedList<String>();
-	private TableCompaniesViewing tableModelViewing;
+	protected static final long serialVersionUID = 1L;
 	
-	class Tweet {
-		public final String user;
-		public final String message;
-		
-		public Tweet(String user, String message) {
-			this.user = user;
-			this.message = message;
-		}
-	}
-	
-	public static final int addSorted(String string, LinkedList<String> list) {
-		for (int listIndex = 0; listIndex < list.size(); listIndex++) {
-			String rowTicker =list.get(listIndex);
-			if (rowTicker.compareTo(string) > 0) {
-				list.add(listIndex, string);
-				return listIndex;
-			}
-		}
-		list.add(string);
-		return list.size();
-	}
-	
-	public static final int removeSorted(String string, LinkedList<String> List) {
-		for (int rowIndex = 0; rowIndex < List.size(); rowIndex++) {
-			String rowTicker = List.get(rowIndex);
-			if (rowTicker.compareTo(string) == 0) {
-				List.remove(rowIndex);
-				return rowIndex;
-			}
-		}
-		return -1;
-	}
-	
-	class TableCompaniesViewing extends AbstractTableModel {
-		
-		private static final long serialVersionUID = SentimentViewer.serialVersionUID;
-		private final SentimentServer sentiment;
-		
-		public TableCompaniesViewing(SentimentServer sentiment) {
-			this.sentiment = sentiment;
-		}
-
-		public Object getValueAt(int rowIndex, int columnIndex) {
-			if (rowIndex == viewingTickers.size()) {
-				switch (columnIndex) {
-					case 0:
-						return "";
-					case 1:
-						return "<html><div style=\"color:red;\">Unmatched Tweets</div></html>";
-					default:
-						return 0;
-				}
-			}
-			String ticker = viewingTickers.get(rowIndex);
-			switch (columnIndex) {
-				case 0:
-					return ticker;
-				case 1:
-					return SandP500Lookup.getCompanyName(ticker);
-				default:
-					return "0";
-			}
-		}
-		
-		public int getRowCount() {
-			return viewingTickers.size() + 1;
-		}
-		
-		public int getColumnCount() {
-			return 3;
-		}
-		
-		@Override
-		public String getColumnName(int column) {
-			switch (column) {
-			case 0:
-				return "Ticker";
-			case 1:
-				return "Name";
-			default:
-				return "Count";
-			}
-		}
-	}
-	
-	class TableCompaniesToView extends AbstractTableModel {
-		
-		private static final long serialVersionUID = SentimentViewer.serialVersionUID;
-
-		public void addCompany(String ticker) {
-			if (viewingTickers.contains(ticker)) {
-				return;
-			}
-			int insertRow = addSorted(ticker, viewingTickers);
-			fireTableRowsInserted(insertRow, insertRow);
-		}
-		
-		public void removeCompany(String ticker) {
-			int removedRow = removeSorted(ticker, viewingTickers);
-			fireTableRowsDeleted(removedRow, removedRow);
-		}
-		
-		public Object getValueAt(int rowIndex, int columnIndex) {
-			String ticker = viewingTickers.get(rowIndex);
-			if (columnIndex == 0) {
-				return ticker;
-			}
-			return SandP500Lookup.getCompanyName(ticker);
-		}
-		
-		public int getRowCount() {
-			return viewingTickers.size();
-		}
-		
-		public int getColumnCount() {
-			return 2;
-		}
-		
-		@Override
-		public String getColumnName(int column) {
-			if (column == 0) {
-				return "Ticker";
-			} else {
-				return "Name";
-			}
-		}
-	}
-	
+	private SortedCompanyTableModel tableModelCompaniesToView;
+	private CompaniesSentimentTableModel tableModelCompaniesSentiment;
+	private TweetViewerListModel listModelTweetViewer;
 	
 	private JFrame frame;
-
+	private int guiPollingPeriodInMilliseconds = 500;
+	private int guiPollingWaitInMilliseconds = 0;
+	
 	/**
 	 * Launch the application.
 	 */
@@ -202,7 +78,7 @@ public class SentimentViewer {
 
 	private JPanel generateStartingPanel() {
 		
-		final TableCompaniesToView companiesToView = new TableCompaniesToView();
+		tableModelCompaniesToView = new SortedCompanyTableModel();
 		
 		JPanel panelStart = new JPanel();
 		panelStart.setLayout(new MigLayout("fill"));
@@ -254,7 +130,7 @@ public class SentimentViewer {
 			public void valueChanged(ListSelectionEvent e) {
 				for (int rowIndex : tableAll.getSelectedRows() ) {
 					String ticker = (String) tableAll.getValueAt(rowIndex, 0);
-					companiesToView.addCompany(ticker);
+					tableModelCompaniesToView.addCompany(ticker);
 				}
 			}
 		});
@@ -262,14 +138,14 @@ public class SentimentViewer {
 		panelStart.add(scrollPaneAll, new CC().grow().pushX().growX());
 		
 		final JTable tableSelected = new JTable();
-		tableSelected.setModel(companiesToView);
+		tableSelected.setModel(tableModelCompaniesToView);
 		tableSelected.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
 				int[] selected = tableSelected.getSelectedRows();
 				tableSelected.clearSelection();
 				for (int rowIndex : selected) {
 					String ticker = (String) tableSelected.getValueAt(rowIndex, 0);
-					companiesToView.removeCompany(ticker);
+					tableModelCompaniesToView.removeCompany(ticker);
 				}
 				
 			}
@@ -292,39 +168,14 @@ public class SentimentViewer {
 		panelRunning.add(lblFocus, new CC().wrap());
 		
 		final JTable tableAll = new JTable();
-		tableModelViewing =
-			    new TableCompaniesViewing(sentiment);
-		tableAll.setModel(tableModelViewing);
+		tableModelCompaniesSentiment =
+			    new CompaniesSentimentTableModel(sentiment);
+		tableAll.setModel(tableModelCompaniesSentiment);
 		JScrollPane scrollPaneAll = new JScrollPane(tableAll);
 		panelRunning.add(scrollPaneAll, new CC().grow().pushX().growX());
 		
-		final LinkedList<Tweet> displayedTweets = new LinkedList<Tweet>();
-		for (int i = 0; i < 20; i++) {
-			displayedTweets.add(new Tweet("porcoesphino",
-			    "I really, really hope this works!!! 123455kdfjkasldfjas"
-			    + "kldfakjflksadjfasldkfjaslkdfjalsdfjsald)"));
-		}
-		
-		final JList<String> listTweets = new JList<String>(new AbstractListModel<String>() {
-
-			private static final long serialVersionUID = SentimentViewer.serialVersionUID;
-			
-			public int getSize() {
-				return displayedTweets.size();
-			}
-
-			public String getElementAt(int index) {
-				Tweet tweet = displayedTweets.get(index);
-				String html = "<html><div style=\"padding:2px;"
-				    + "background-color:#EDF5F4;color:black\">"
-				    + "<div style=\"padding:2px;font-weight:500;\">"
-				    + "@" + tweet.user
-				    + "</div><p style=\"text-wrap:break-word;\">"
-				    + tweet.message
-				    + "</p></div></html>";
-				return html;
-			}
-		});
+		listModelTweetViewer = new TweetViewerListModel(sentiment);
+		final JList<String> listTweets = new JList<String>(listModelTweetViewer);
 		
 		JScrollPane scrollPaneTweets = new JScrollPane(listTweets);
 		panelRunning.add(scrollPaneTweets, new CC().grow().pushX().growX().wrap());
@@ -339,24 +190,33 @@ public class SentimentViewer {
 				lblPreMissed.setText("Unreceived tweets due to track limitation: " +
 					     sentiment.getNumberOfLimitedStatuses());
 			}
-		}, 1000, 1000);
-		
+		}, guiPollingWaitInMilliseconds, guiPollingPeriodInMilliseconds);
 		panelRunning.add(lblPreMissed, new CC().span(2));
+		
+		listModelTweetViewer.setSize(listTweets.getWidth());
 		
 		tableAll.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			
 			public void valueChanged(ListSelectionEvent e) {
-				for (int rowIndex : tableAll.getSelectedRows() ) {
-					String ticker = (String) tableAll.getValueAt(rowIndex, 0);
-					String name = (String) tableAll.getValueAt(rowIndex, 1);
-					String displayName;
-					if (name.contains("<html>")) {
-						displayName = "Unknown Tweets";
-					} else {
-						displayName = name + " (" + ticker + ")";
-					}
-					lblFocus.setText((new Date()).toString() + ": " + displayName);
+				int[] indexes = tableAll.getSelectedRows();
+				if (indexes.length == 0) {
+					lblFocus.setText("");
+					return;
 				}
+				int rowIndex = indexes[0];
+				String ticker = (String) tableAll.getValueAt(rowIndex, 0);
+				String name = (String) tableAll.getValueAt(rowIndex, 1);
+				String displayName;
+				if (name.contains("<html>")) {
+					displayName = "Unknown Tweets";
+					listModelTweetViewer.setSize(listTweets.getWidth());
+					listModelTweetViewer.setCompany(null);
+				} else {
+					displayName = name + " (" + ticker + ")";
+					listModelTweetViewer.setSize(listTweets.getWidth());
+					listModelTweetViewer.setCompany(ticker);
+				}
+				lblFocus.setText((new Date()).toString() + ": " + displayName);
 			}
 		});
 		
@@ -427,17 +287,17 @@ public class SentimentViewer {
 						}
 					}, waitInMilliSeconds);
 					cardLayout.last(panelContent);
-					tableModelViewing.fireTableDataChanged();
+					sentiment.setCompanies(
+					    tableModelCompaniesToView.getCompaniesTickers());
+					tableModelCompaniesSentiment.updateTickers();
+					sentiment.startServer();
 					Timer timer2 = new Timer();
 					timer2.schedule(new TimerTask() {
 						@Override
 						public void run() {
-							tableModelViewing.fireTableDataChanged();
+							tableModelCompaniesSentiment.updateCounters();
 						}
-					}, 1000,5000);
-					CompaniesFilter companies = new CompaniesFilter();
-					companies.addCompanies(viewingTickers.toArray(new String[] {}));
-					sentiment.startServer(companies);
+					}, guiPollingWaitInMilliseconds, guiPollingPeriodInMilliseconds);
 				} else if (btnStart.getText().contentEquals(msgRunning)) {
 					btnStart.setText(msgStart);
 					spinnerInterval.setEnabled(true);
@@ -445,6 +305,7 @@ public class SentimentViewer {
 					labelInterval.setText("Interval (mins)");
 					cardLayout.first(panelContent);
 					sentiment.stopServer();
+					listModelTweetViewer.clearTweets();
 				} else {
 					throw new RuntimeException("Button out of Sync. No idea how.");
 				}
@@ -453,10 +314,10 @@ public class SentimentViewer {
 		
 		cardLayout.first(panelContent);
 		
-		addSorted("GOOG", viewingTickers);
-		addSorted("AMZN", viewingTickers);
-		addSorted("AAPL", viewingTickers);
-		addSorted("MSFT", viewingTickers);
+		tableModelCompaniesToView.addCompany("GOOG");
+		tableModelCompaniesToView.addCompany("AMZN");
+		tableModelCompaniesToView.addCompany("AAPL");
+		tableModelCompaniesToView.addCompany("MSFT");
 	}
 
 }

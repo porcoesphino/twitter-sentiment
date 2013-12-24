@@ -5,8 +5,8 @@ import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.text.ParseException;
-import java.util.Timer;
-import java.util.TimerTask;
+
+import com.porcoesphino.twitterSentiment.TweetWindow.Tweet;
 
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
@@ -31,8 +31,20 @@ public class SentimentServer {
 	private CompaniesFilter companiesFilter;
 	private TwitterStream twitterStream;
 	
-	public void startServer(CompaniesFilter companiesFilter) {
-		this.companiesFilter = companiesFilter;
+	public SentimentServer() {
+		companiesFilter = new CompaniesFilter();
+	}
+	
+	public void addCompanies(String[] companies) {
+		companiesFilter.addCompanies(companies);
+	}
+	
+	public void setCompanies(String[] companies) {
+		companiesFilter = new CompaniesFilter();
+		addCompanies(companies);
+	}
+	
+	public void startServer() {
 		twitterStream = new TwitterStreamFactory()
 		.getInstance();
 
@@ -44,6 +56,14 @@ public class SentimentServer {
 	public void stopServer() {
 		twitterStream.cleanUp(); // shutdown internal stream consuming thread
 		twitterStream.shutdown();
+		companiesFilter = null;
+	}
+	
+	public String[] getCompaniesTickers() {
+		if (companiesFilter == null) {
+			return new String[] {};
+		}
+		return companiesFilter.getCompaniesTickers();
 	}
 	
 	public int getNumberOfLimitedStatuses() {
@@ -51,6 +71,34 @@ public class SentimentServer {
 			return 0;
 		}
 		return companiesFilter.getNumberOfLimitedStatuses();
+	}
+	
+	public int getNumberOfTweetsForCompany(String ticker) {
+		if (companiesFilter == null) {
+			return 0;
+		}
+		return companiesFilter.getNumberOfTweetsForCompany(ticker);
+	}
+	
+	public Tweet[] getTweetsForCompany(String ticker) {
+		if (companiesFilter == null) {
+			return new Tweet[0];
+		}
+		return companiesFilter.getTweetsForCompany(ticker);
+	}
+	
+	public int getNumberOfUnmatchedTweets() {
+		if (companiesFilter == null) {
+			return 0;
+		}
+		return companiesFilter.getNumberOfUnmatchedTweets();
+	}
+	
+	public Tweet[] getUnmatchedTweets() {
+		if (companiesFilter == null) {
+			return new Tweet[0];
+		}
+		return companiesFilter.getUnmatchedTweets();
 	}
 	
 	public static void main(String[] args) {
@@ -66,12 +114,12 @@ public class SentimentServer {
 			System.exit(1);
 		}
 	
-		CompaniesFilter companiesFilter = new CompaniesFilter();
-		companiesFilter.addCompanies(new String[]{"AAPL", "GOOG", "MSFT"});
-		companiesFilter.addCompanies(SandP500Lookup.getTickers());
+		final SentimentServer server = new SentimentServer();
+		server.addCompanies(new String[]{"AAPL", "GOOG", "MSFT"});
+		server.addCompanies(SandP500Lookup.getTickers());
 		
 		System.out.println("Starting!");
-		final SentimentServer server = new SentimentServer();
-		server.startServer(companiesFilter);
+		
+		server.startServer();
 	}
 }

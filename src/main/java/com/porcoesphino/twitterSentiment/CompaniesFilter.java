@@ -1,6 +1,9 @@
 package com.porcoesphino.twitterSentiment;
 
+import java.util.HashMap;
 import java.util.LinkedList;
+
+import com.porcoesphino.twitterSentiment.TweetWindow.Tweet;
 
 import twitter4j.FilterQuery;
 import twitter4j.Status;
@@ -21,9 +24,11 @@ import twitter4j.Status;
  * @author bodey.baker@gmail.com
  */
 public class CompaniesFilter extends AbstractTweetListener{
-	private LinkedList<CompanyTweetParser> companyParsers = new LinkedList<CompanyTweetParser>();
+	private HashMap<String, CompanyTweetParser> companyParsers = new HashMap<String, CompanyTweetParser>();
 	private LinkedList<String> trackingFilter = new LinkedList<String>();
-	private int numberOfLimitedStatuses;
+	
+	private int numberOfLimitedStatuses = 0;
+	private TweetWindow unmatchedTweets = new TweetWindow();
 	
 	// Apparently we can open 200 companies or 400 tracking terms.
 	// I didn't see this in the documentation, only a mention of
@@ -35,9 +40,8 @@ public class CompaniesFilter extends AbstractTweetListener{
 		if (companyParsers.size() >= 200) {
 			return false;
 		} else {
-			System.out.println("Adding " + name);
 			CompanyTweetParser parser = new CompanyTweetParser(ticker, name);
-			companyParsers.add(parser);
+			companyParsers.put(ticker, parser);
 			trackingFilter.add(ticker);
 			trackingFilter.add(name);
 			return true;
@@ -52,7 +56,7 @@ public class CompaniesFilter extends AbstractTweetListener{
 	
 	public String toCompanyListString() {
 		StringBuilder builder = new StringBuilder();
-		for (CompanyTweetParser parser: companyParsers) {
+		for (CompanyTweetParser parser: companyParsers.values()) {
 			builder.append(" - ");
 			builder.append(parser.name);
 		}
@@ -64,6 +68,26 @@ public class CompaniesFilter extends AbstractTweetListener{
 		String[] trackingStrings = new String[trackingFilter.size()];
 		trackingStrings = trackingFilter.toArray(trackingStrings);
 		return result.track(trackingStrings);
+	}
+	
+	public String[] getCompaniesTickers() {
+		return companyParsers.keySet().toArray(new String[] {});
+	}
+	
+	public int getNumberOfTweetsForCompany(String ticker) {
+		return companyParsers.get(ticker).getNumberOfTweets();
+	}
+	
+	public Tweet[] getTweetsForCompany(String ticker) {
+		return companyParsers.get(ticker).getTweets();
+	}
+	
+	public int getNumberOfUnmatchedTweets() {
+		return unmatchedTweets.getNumberOfTweetsInWindow();
+	}
+	
+	public Tweet[] getUnmatchedTweets() {
+		return unmatchedTweets.getTweets();
 	}
 	
 	public int getNumberOfLimitedStatuses() {
@@ -86,14 +110,14 @@ public class CompaniesFilter extends AbstractTweetListener{
 		String text = status.getText();
 		String[] words = CompanyTweetParser.splitIntoWords(text);
 		boolean found = false;
-		for (CompanyTweetParser parser : companyParsers) {
+		for (CompanyTweetParser parser : companyParsers.values()) {
 			if (parser.isForThisCompany(words)) {
 				found = true;
-				System.out.println("--- " + parser.name);
+				parser.addStatus(status);
 			}
 		}
 		if (!found) {
-			System.err.println("Not found: " + status.getText());
+			unmatchedTweets.addTweet(status);
 		}
 	}
 }

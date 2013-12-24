@@ -1,7 +1,6 @@
 package com.porcoesphino.twitterSentiment;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import com.porcoesphino.twitterSentiment.TweetWindow.Tweet;
 
 import twitter4j.Status;
 
@@ -26,7 +25,7 @@ public class CompanyTweetParser {
 	public final String name;
 	private final String[] splitName;
 	
-	private final Queue<Status> statusWindow;
+	private final TweetWindow companiesTweets;
 	
 	public CompanyTweetParser(String ticker, String companyName) {
 		super();
@@ -34,7 +33,7 @@ public class CompanyTweetParser {
 		this.ticker = ticker;
 		name = companyName;
 		splitName = CompanyTweetParser.splitIntoWords(companyName);
-		statusWindow = new LinkedList<Status>();
+		companiesTweets = new TweetWindow();
 	}
 	
 	private boolean containsCompanyName(String[] words) {
@@ -66,5 +65,17 @@ public class CompanyTweetParser {
 	
 	public boolean isForThisCompany(String[] words) {
 		return containsTicker(words) || containsCompanyName(words);
+	}
+	
+	public void addStatus(Status status) {
+		companiesTweets.addTweet(status);
+	}
+	
+	public int getNumberOfTweets() {
+		return companiesTweets.getNumberOfTweetsInWindow();
+	}
+	
+	public Tweet[] getTweets() {
+		return companiesTweets.getTweets();
 	}
 }
