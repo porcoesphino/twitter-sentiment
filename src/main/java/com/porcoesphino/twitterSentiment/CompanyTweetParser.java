@@ -2,9 +2,8 @@ package com.porcoesphino.twitterSentiment;
 
 import java.util.regex.Pattern;
 
+import com.porcoesphino.twitterSentiment.TweetWindow.StatusAndMeta;
 import com.porcoesphino.twitterSentiment.TweetWindow.Tweet;
-
-import twitter4j.Status;
 
 /**
  * This class is intended to parse a tweet to test the sentiment.
@@ -40,8 +39,6 @@ public class CompanyTweetParser {
 	public CompanyTweetParser(String ticker, String companyName) {
 		super();
 		
-		
-		
 		this.ticker = ticker;
 		name = companyName;
 		splitName = CompanyTweetParser.splitIntoWords(companyName);
@@ -75,12 +72,18 @@ public class CompanyTweetParser {
 		return false;
 	}
 	
-	public boolean isForThisCompany(String[] words) {
-		return containsTicker(words) || containsCompanyName(words);
+	public boolean addIfForThisCompany(StatusAndMeta statusAndMeta) {
+		if (containsTicker(statusAndMeta.words) ||
+				containsCompanyName(statusAndMeta.words)) {
+			companiesTweets.addTweet(statusAndMeta);
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
-	public void addStatus(Status status) {
-		companiesTweets.addTweet(status);
+	public void setWindow(long windowInMilliseconds) {
+		companiesTweets.setWindow(windowInMilliseconds);
 	}
 	
 	public int getNumberOfTweets() {

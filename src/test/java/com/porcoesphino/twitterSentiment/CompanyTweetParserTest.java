@@ -4,6 +4,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.porcoesphino.twitterSentiment.TweetWindow.StatusAndMeta;
+
 public class CompanyTweetParserTest {
 
 	@Test
@@ -36,14 +38,14 @@ public class CompanyTweetParserTest {
 		String text = "Google  Is Inc. Dictating SERP (Search Engine Result Page) For Dollars ? http://t.co/BNbTLiXTbx #Startups";
 		String[] words = CompanyTweetParser.splitIntoWords(text);
 		CompanyTweetParser parser = new CompanyTweetParser("GOOG", "Google Inc.");
-		assertFalse(parser.isForThisCompany(words));
+		assertFalse(parser.addIfForThisCompany(new StatusAndMeta(null, words)));
 	}
 	
 	public void companyMatched(String ticker, String company, String text) {
 		String[] words = CompanyTweetParser.splitIntoWords(text);
 		CompanyTweetParser parser = new CompanyTweetParser(ticker, company);
 		assertTrue(company + " (" + ticker + ") didn't match: " + text,
-				parser.isForThisCompany(words));
+				parser.addIfForThisCompany(new StatusAndMeta(null, words)));
 	}
 	
 	@Test

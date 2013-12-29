@@ -56,6 +56,10 @@ public class SentimentServer {
 		companiesFilter = null;
 	}
 	
+	public void setWindow(long windowInMilliseconds) {
+		companiesFilter.setWindow(windowInMilliseconds);
+	}
+	
 	public String[] getCompaniesTickers() {
 		if (companiesFilter == null) {
 			return new String[] {};

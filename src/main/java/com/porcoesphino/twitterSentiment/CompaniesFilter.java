@@ -3,6 +3,7 @@ package com.porcoesphino.twitterSentiment;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import com.porcoesphino.twitterSentiment.TweetWindow.StatusAndMeta;
 import com.porcoesphino.twitterSentiment.TweetWindow.Tweet;
 
 import twitter4j.FilterQuery;
@@ -70,6 +71,13 @@ public class CompaniesFilter extends AbstractTweetListener{
 		return result.track(trackingStrings);
 	}
 	
+	public void setWindow(long windowInMilliseconds) {
+		for (CompanyTweetParser parser : companyParsers.values()) {
+			parser.setWindow(windowInMilliseconds);
+		}
+		unmatchedTweets.setWindow(windowInMilliseconds);
+	}
+	
 	public String[] getCompaniesTickers() {
 		return companyParsers.keySet().toArray(new String[] {});
 	}
@@ -109,15 +117,15 @@ public class CompaniesFilter extends AbstractTweetListener{
 		//System.out.println("? " + status.getText());
 		String text = status.getText();
 		String[] words = CompanyTweetParser.splitIntoWords(text);
+		StatusAndMeta statusAndMeta = new StatusAndMeta(status, words);
 		boolean found = false;
 		for (CompanyTweetParser parser : companyParsers.values()) {
-			if (parser.isForThisCompany(words)) {
+			if (parser.addIfForThisCompany(statusAndMeta)) {
 				found = true;
-				parser.addStatus(status);
 			}
 		}
 		if (!found) {
-			unmatchedTweets.addTweet(status);
+			unmatchedTweets.addTweet(new StatusAndMeta(status, null));
 		}
 	}
 }

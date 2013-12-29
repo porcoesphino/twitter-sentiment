@@ -47,7 +47,7 @@ public class SentimentViewer {
 	private final int sentimentTableInitialWidth = 400;
 	private final int guiPollingPeriodInMilliseconds = 100;
 	private final int guiPollingWaitInMilliseconds = 0;
-	private final double initialWindowInMinutes = 0.5;
+	private final int initialWindowInMinutes = 1;
 	
 	/**
 	 * Launch the application.
@@ -262,9 +262,10 @@ public class SentimentViewer {
 		final JLabel intervalIndicator = new JLabel(intervalMessage);
 		commonContentPanel.add(intervalIndicator);
 		
-		final JSpinner intervalController = new JSpinner(
-				new SpinnerNumberModel(initialWindowInMinutes, .5, 60, 1));
-		commonContentPanel.add(intervalController, new CC());
+		final SpinnerNumberModel intervalController =
+				new SpinnerNumberModel(initialWindowInMinutes, 1, 60, 1);
+		final JSpinner intervalViewer = new JSpinner(intervalController);
+		commonContentPanel.add(intervalViewer, new CC());
 		
 		final JButton startController = new JButton(startMessage);
 		commonContentPanel.add(startController, new CC().grow());
@@ -274,15 +275,15 @@ public class SentimentViewer {
 			public void actionPerformed(ActionEvent e) {
 				if (startController.getText().contentEquals(startMessage)) {
 					startController.setText(stopMessage);
-					intervalController.setEnabled(false);
+					intervalViewer.setEnabled(false);
 					intervalIndicator.setToolTipText("Until there are tweets" +
 					    " from the full interval, this indicator will be red");
 					intervalIndicator.setText("<html><font style='color:red'>"
 					    + intervalMessage
 					    + "</font></html>");
-					long waitInMilliSeconds =
-					    ((Double) (((Double) intervalController.getValue())
-					    * 60 * 1000)).longValue();
+					long windowInMilliSeconds =
+					    intervalController.getNumber().longValue()
+					    * 60 * 1000;
 					Timer intervalFinishedUpdateder = new Timer();
 					intervalFinishedUpdateder.schedule(new TimerTask() {
 						@Override
@@ -292,11 +293,12 @@ public class SentimentViewer {
 							    + intervalMessage
 							    + "</font></html>");
 						}
-					}, waitInMilliSeconds);
+					}, windowInMilliSeconds);
 					cardLayout.last(mainContentPanel);
 					sentiment.setCompanies(
 					    selectedCompaniesModel.getCompaniesTickers());
 					sentimentModel.updateTickers();
+					sentiment.setWindow(windowInMilliSeconds);
 					sentiment.startServer();
 					Timer sentimentIndicatorsUpdater = new Timer();
 					sentimentIndicatorsUpdater.schedule(new TimerTask() {
@@ -307,7 +309,7 @@ public class SentimentViewer {
 					}, guiPollingWaitInMilliseconds, guiPollingPeriodInMilliseconds);
 				} else if (startController.getText().contentEquals(stopMessage)) {
 					startController.setText(startMessage);
-					intervalController.setEnabled(true);
+					intervalViewer.setEnabled(true);
 					intervalIndicator.setToolTipText("");
 					intervalIndicator.setText("Interval (mins)");
 					cardLayout.first(mainContentPanel);
