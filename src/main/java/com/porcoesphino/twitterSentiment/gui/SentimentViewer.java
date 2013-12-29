@@ -44,8 +44,10 @@ public class SentimentViewer {
 	private TweetViewerTableModel tweetsModel;
 	
 	private JFrame frame;
-	private int guiPollingPeriodInMilliseconds = 500;
-	private int guiPollingWaitInMilliseconds = 0;
+	private final int sentimentTableInitialWidth = 400;
+	private final int guiPollingPeriodInMilliseconds = 100;
+	private final int guiPollingWaitInMilliseconds = 0;
+	private final double initialWindowInMinutes = 0.5;
 	
 	/**
 	 * Launch the application.
@@ -173,7 +175,7 @@ public class SentimentViewer {
 		tweetsIndicator.setModel(tweetsModel);
 		
 		// Configure Components
-		splitPane.setDividerLocation(300);
+		splitPane.setDividerLocation(sentimentTableInitialWidth);
 		
 		sentimentIndicator.getSelectionModel().setSelectionMode(
 				ListSelectionModel.SINGLE_SELECTION);
@@ -261,7 +263,7 @@ public class SentimentViewer {
 		commonContentPanel.add(intervalIndicator);
 		
 		final JSpinner intervalController = new JSpinner(
-				new SpinnerNumberModel(5, .5, 60, 1));
+				new SpinnerNumberModel(initialWindowInMinutes, .5, 60, 1));
 		commonContentPanel.add(intervalController, new CC());
 		
 		final JButton startController = new JButton(startMessage);
@@ -279,8 +281,8 @@ public class SentimentViewer {
 					    + intervalMessage
 					    + "</font></html>");
 					long waitInMilliSeconds =
-					    ((Double) intervalController.getValue()).longValue()
-					    * 60 * 1000;
+					    ((Double) (((Double) intervalController.getValue())
+					    * 60 * 1000)).longValue();
 					Timer intervalFinishedUpdateder = new Timer();
 					intervalFinishedUpdateder.schedule(new TimerTask() {
 						@Override

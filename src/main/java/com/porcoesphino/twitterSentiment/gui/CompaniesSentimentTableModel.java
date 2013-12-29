@@ -1,5 +1,8 @@
 package com.porcoesphino.twitterSentiment.gui;
 
+import java.util.concurrent.ExecutionException;
+
+import javax.swing.SwingWorker;
 import javax.swing.table.AbstractTableModel;
 
 import com.porcoesphino.twitterSentiment.SandP500Lookup;
@@ -15,41 +18,49 @@ public class CompaniesSentimentTableModel extends AbstractTableModel {
 	
 	private static final long serialVersionUID = SentimentViewer.serialVersionUID;
 	private final SentimentServer sentiment;
-	private String[] viewingTickers;
+	private String[] tickerList;
+	private String[] tweetCounts;
+	private String[] frequentWordsList;
+	
+	private void updateLists() {
+		tickerList = sentiment.getCompaniesTickers();
+		tweetCounts = new String[tickerList.length+1];
+		frequentWordsList = new String[tickerList.length];
+	}
 	
 	public CompaniesSentimentTableModel(SentimentServer sentiment) {
 		this.sentiment = sentiment;
-		viewingTickers = sentiment.getCompaniesTickers();
+		updateLists();
 	}
 
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		if (rowIndex == viewingTickers.length) {
+		if (rowIndex == tickerList.length) {
 			switch (columnIndex) {
 				case 0:
+				case 3:
 					return "";
 				case 1:
 					return "<html><div style='color:red;'>Unmatched Tweets</div></html>";
-				default:
-					return sentiment.getNumberOfUnmatchedTweets();
 			}
 		}
-		String ticker = viewingTickers[rowIndex];
 		switch (columnIndex) {
 			case 0:
-				return ticker;
+				return tickerList[rowIndex];
 			case 1:
-				return SandP500Lookup.getCompanyName(ticker);
+				return SandP500Lookup.getCompanyName(tickerList[rowIndex]);
+			case 2:
+				return tweetCounts[rowIndex];
 			default:
-				return sentiment.getNumberOfTweetsForCompany(ticker);
+				return frequentWordsList[rowIndex];
 		}
 	}
 	
 	public int getRowCount() {
-		return viewingTickers.length + 1;
+		return tickerList.length + 1;
 	}
 	
 	public int getColumnCount() {
-		return 3;
+		return 4;
 	}
 	
 	@Override
@@ -59,19 +70,46 @@ public class CompaniesSentimentTableModel extends AbstractTableModel {
 			return "Ticker";
 		case 1:
 			return "Name";
-		default:
+		case 2:
 			return "Count";
+		default:
+			return "Frequent Words";
 		}
 	}
 	
 	public void updateCounters() {
-		for (int rowIndex = 0; rowIndex <= viewingTickers.length; rowIndex++) {
-			fireTableCellUpdated(rowIndex, 2);
-		}
+		SwingWorker<String[], Void> counterUpdater = new SwingWorker<String[], Void> () {
+			@Override
+			protected String[] doInBackground() throws Exception {
+				String[] newCounters = new String[tickerList.length+1]; 
+				for (int rowIndex = 0; rowIndex < tickerList.length; rowIndex++) {
+					String ticker = tickerList[rowIndex];
+					newCounters[rowIndex] = Integer.toString(
+							sentiment.getNumberOfTweetsForCompany(ticker));
+				}
+				newCounters[tickerList.length] = Integer.toString(
+						sentiment.getNumberOfUnmatchedTweets());
+				return newCounters;
+			}
+			@Override
+			protected void done() {
+				try {
+					tweetCounts = get();
+					for (int rowIndex = 0; rowIndex <= tickerList.length; rowIndex++) {
+						fireTableCellUpdated(rowIndex, 2);
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		counterUpdater.execute();
 	}
 	
 	public void updateTickers() {
-		viewingTickers = sentiment.getCompaniesTickers();
+		updateLists();
 		fireTableDataChanged();
 	}
 }

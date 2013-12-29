@@ -26,15 +26,15 @@ public class TweetWindow {
 	
 	private final Queue<Status> tweetsInWindow = new LinkedList<Status>();
 	
-	public int getNumberOfTweetsInWindow() {
+	public synchronized int getNumberOfTweetsInWindow() {
 		return tweetsInWindow.size();
 	}
 	
-	public void addTweet(Status status) {
+	public synchronized void addTweet(Status status) {
 		tweetsInWindow.add(status);
 	}
 	
-	public Tweet[] getTweets() {
+	public synchronized Tweet[] getTweets() {
 		Tweet[] tweets = new Tweet[tweetsInWindow.size()];
 		int index = 0;
 		for (Status status : tweetsInWindow) {
