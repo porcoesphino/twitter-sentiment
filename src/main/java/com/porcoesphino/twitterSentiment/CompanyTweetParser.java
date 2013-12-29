@@ -1,5 +1,7 @@
 package com.porcoesphino.twitterSentiment;
 
+import java.util.regex.Pattern;
+
 import com.porcoesphino.twitterSentiment.TweetWindow.Tweet;
 
 import twitter4j.Status;
@@ -12,13 +14,21 @@ import twitter4j.Status;
  * @author bodey.baker@gmail.com
  */
 public class CompanyTweetParser {
+	
+	public static Pattern startingWhitespaceAndSymbols = Pattern.compile("^\\W+");
+	public static Pattern anyWhitespaceAndSymbols = Pattern.compile("\\W+");
+	
 	/*
 	 * Split a string of text into words and remove these common symbols:
 	 *  - Cashtag, Hashtag, Username
 	 *  - And all others because they cause parsing errors
 	 */
+	//String.split(regex) actually simply invokes Pattern.compile(regex).split(this, limit), and compile() returns a new Pattern each time. If the split is a frequent operation, it is thus beneficial to create and reuse a single Pattern instance for performing the splits.
 	public static String[] splitIntoWords(String statusText) {
-		return statusText.replaceFirst("^\\W+", "").split("\\W+");
+		// TODO: Test this is actually faster
+		return anyWhitespaceAndSymbols.split(
+		    startingWhitespaceAndSymbols.matcher(statusText).replaceFirst(""));
+		//return statusText.replaceFirst("^\\W+", "").split("\\W+");
 	}
 	
 	public final String ticker;
@@ -29,6 +39,8 @@ public class CompanyTweetParser {
 	
 	public CompanyTweetParser(String ticker, String companyName) {
 		super();
+		
+		
 		
 		this.ticker = ticker;
 		name = companyName;

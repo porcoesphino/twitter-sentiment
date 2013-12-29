@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Set;
 
 /**
- * Singleton to provide the current S&P 500 companies.
+ * Singleton to provide information on the current S&P 500 companies.
  * 
  * Abstracts away the code for getting the company details.
  * Currently only checks at startup but could be implemented

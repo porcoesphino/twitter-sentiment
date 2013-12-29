@@ -11,9 +11,6 @@ import com.porcoesphino.twitterSentiment.TweetWindow.Tweet;
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
 
-//TODO: Add a GUI. Mig Layout? Combo box, only 200 companies.
-// This opens a service in another process which is queried
-
 /**
  * The main class to query the twitter server and display popular words in
  * real time.
@@ -54,7 +51,7 @@ public class SentimentServer {
 	}
 	
 	public void stopServer() {
-		twitterStream.cleanUp(); // shutdown internal stream consuming thread
+		twitterStream.cleanUp();
 		twitterStream.shutdown();
 		companiesFilter = null;
 	}

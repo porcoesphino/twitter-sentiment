@@ -5,6 +5,12 @@ import javax.swing.table.AbstractTableModel;
 import com.porcoesphino.twitterSentiment.SandP500Lookup;
 import com.porcoesphino.twitterSentiment.SentimentServer;
 
+/**
+ * A TableModel used to show the selected S&P companies and the amount of
+ * tweets currently sent about them.
+ *  
+ * @author bodey.baker@gmail.com
+ */
 public class CompaniesSentimentTableModel extends AbstractTableModel {
 	
 	private static final long serialVersionUID = SentimentViewer.serialVersionUID;
@@ -22,7 +28,7 @@ public class CompaniesSentimentTableModel extends AbstractTableModel {
 				case 0:
 					return "";
 				case 1:
-					return "<html><div style=\"color:red;\">Unmatched Tweets</div></html>";
+					return "<html><div style='color:red;'>Unmatched Tweets</div></html>";
 				default:
 					return sentiment.getNumberOfUnmatchedTweets();
 			}

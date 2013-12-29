@@ -6,7 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -14,15 +13,16 @@ import java.util.TimerTask;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.JViewport;
+import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
 
 import com.porcoesphino.twitterSentiment.SandP500Lookup;
 import com.porcoesphino.twitterSentiment.SentimentServer;
@@ -30,13 +30,18 @@ import com.porcoesphino.twitterSentiment.SentimentServer;
 import net.miginfocom.layout.CC;
 import net.miginfocom.swing.MigLayout;
 
+/**
+ * A GUI to view the numbers of tweets about selected S&P companies.
+ * 
+ * @author bodey.baker@gmail.com
+ */
 public class SentimentViewer {
 
 	protected static final long serialVersionUID = 1L;
 	
-	private SortedCompanyTableModel tableModelCompaniesToView;
-	private CompaniesSentimentTableModel tableModelCompaniesSentiment;
-	private TweetViewerListModel listModelTweetViewer;
+	private SortedCompanyTableModel selectedCompaniesModel;
+	private CompaniesSentimentTableModel sentimentModel;
+	private TweetViewerTableModel tweetsModel;
 	
 	private JFrame frame;
 	private int guiPollingPeriodInMilliseconds = 500;
@@ -76,151 +81,149 @@ public class SentimentViewer {
 		initialize();
 	}
 
-	private JPanel generateStartingPanel() {
+	private JPanel generateInitialPanel() {
 		
-		tableModelCompaniesToView = new SortedCompanyTableModel();
+		// Construct and add Components
+		JPanel initPanel = new JPanel();
+		initPanel.setLayout(new MigLayout("fill"));
 		
-		JPanel panelStart = new JPanel();
-		panelStart.setLayout(new MigLayout("fill"));
+		JLabel allCompaniesLabel = 
+				new JLabel("S&P Companies (Select to watch)");
+		initPanel.add(allCompaniesLabel, new CC());
 		
-		JLabel lblAll = new JLabel("S&P Companies (Select to watch)");
-		panelStart.add(lblAll, new CC());
+		JLabel selectedCompaniesLabel =
+				new JLabel("Companies To Watch (Select to remove)");
+		initPanel.add(selectedCompaniesLabel, new CC().wrap());
 		
-		JLabel lblSelected = new JLabel("Companies To Watch (Select to remove)");
-		panelStart.add(lblSelected, new CC().wrap());
+		final JTable allCompaniesIndicator = new JTable();
 		
-		final JTable tableAll = new JTable();
+		JScrollPane allCompaniesScroller = 
+				new JScrollPane(allCompaniesIndicator);
+		initPanel.add(allCompaniesScroller, new CC().grow().pushX().growX());
 		
-		tableAll.setModel(new AbstractTableModel() {
+		final JTable selectedCompaniesIndicator = new JTable();
+		
+		JScrollPane selectedCompaniesScroller = 
+				new JScrollPane(selectedCompaniesIndicator);
+		initPanel.add(selectedCompaniesScroller, 
+				new CC().grow().pushX().growX());
+		
+		// Construct Models
+		selectedCompaniesModel = new SortedCompanyTableModel();
+		SortedCompanyTableModel allCompaniesModel =
+				new SortedCompanyTableModel(SandP500Lookup.getTickers());
+		
+		// Configure Components and Models
+		allCompaniesIndicator.setModel(allCompaniesModel);
+		allCompaniesIndicator.getSelectionModel()
+				.addListSelectionListener(new ListSelectionListener() {
 			
-			private static final long serialVersionUID = SentimentViewer.serialVersionUID;
-			String[] tickers = SandP500Lookup.getTickers();
-			Boolean sorted = false;
-			
-			public Object getValueAt(int rowIndex, int columnIndex) {
-				if (!sorted) {
-					Arrays.sort(tickers);
-				}
-				String ticker = tickers[rowIndex];
-				if (columnIndex == 0) {
-					return ticker;
-				}
-				return SandP500Lookup.getCompanyName(ticker);
-			}
-			
-			public int getRowCount() {
-				return tickers.length;
-			}
-			
-			public int getColumnCount() {
-				return 2;
-			}
-			
-			@Override
-			public String getColumnName(int column) {
-				if (column == 0) {
-					return "Ticker";
-				} else {
-					return "Name";
+			public void valueChanged(ListSelectionEvent e) {
+				for (int rowIndex : allCompaniesIndicator.getSelectedRows() ) {
+					String ticker = (String)
+							allCompaniesIndicator.getValueAt(rowIndex, 0);
+					selectedCompaniesModel.addCompany(ticker);
 				}
 			}
 		});
-		tableAll.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			
-			public void valueChanged(ListSelectionEvent e) {
-				for (int rowIndex : tableAll.getSelectedRows() ) {
-					String ticker = (String) tableAll.getValueAt(rowIndex, 0);
-					tableModelCompaniesToView.addCompany(ticker);
-				}
-			}
-		});
-		JScrollPane scrollPaneAll = new JScrollPane(tableAll);
-		panelStart.add(scrollPaneAll, new CC().grow().pushX().growX());
 		
-		final JTable tableSelected = new JTable();
-		tableSelected.setModel(tableModelCompaniesToView);
-		tableSelected.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+		selectedCompaniesIndicator.setModel(selectedCompaniesModel);
+		selectedCompaniesIndicator.getSelectionModel()
+				.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
-				int[] selected = tableSelected.getSelectedRows();
-				tableSelected.clearSelection();
+				int[] selected = selectedCompaniesIndicator.getSelectedRows();
+				selectedCompaniesIndicator.clearSelection();
 				for (int rowIndex : selected) {
-					String ticker = (String) tableSelected.getValueAt(rowIndex, 0);
-					tableModelCompaniesToView.removeCompany(ticker);
+					String ticker = (String) selectedCompaniesIndicator
+							.getValueAt(rowIndex, 0);
+					selectedCompaniesModel.removeCompany(ticker);
 				}
-				
 			}
 		});
-		JScrollPane scrollPaneSelected = new JScrollPane(tableSelected);
-		panelStart.add(scrollPaneSelected, new CC().grow().pushX().growX());
 		
-		return panelStart;
+		return initPanel;
 	}
 	
 	private JPanel generateRunningPanel(final SentimentServer sentiment) {
 		
-		JPanel panelRunning = new JPanel();
-		panelRunning.setLayout(new MigLayout("fill"));
+		// Construct and Add Components
+		JPanel execPanel = new JPanel();
+		execPanel.setLayout(new MigLayout("fill"));
 		
-		JLabel lblSelected = new JLabel("Companies");
-		panelRunning.add(lblSelected, new CC());
+		final JTable sentimentIndicator = new JTable();
+		JScrollPane sentimentScroller = new JScrollPane(sentimentIndicator);
 		
-		final JLabel lblFocus = new JLabel("");
-		panelRunning.add(lblFocus, new CC().wrap());
+		final JTable tweetsIndicator = new JTable();
+		JScrollPane tweetsScroller = new JScrollPane(tweetsIndicator);
 		
-		final JTable tableAll = new JTable();
-		tableModelCompaniesSentiment =
-			    new CompaniesSentimentTableModel(sentiment);
-		tableAll.setModel(tableModelCompaniesSentiment);
-		JScrollPane scrollPaneAll = new JScrollPane(tableAll);
-		panelRunning.add(scrollPaneAll, new CC().grow().pushX().growX());
+		JSplitPane splitPane = new JSplitPane(
+				JSplitPane.HORIZONTAL_SPLIT, sentimentScroller, tweetsScroller);
+		execPanel.add(splitPane, 
+				new CC().span(2).wrap().grow().pushX().growX());
 		
-		listModelTweetViewer = new TweetViewerListModel(sentiment);
-		final JList<String> listTweets = new JList<String>(listModelTweetViewer);
+		final JLabel unreceivedTweetsIndicator = new JLabel(
+				"Unreceived tweets due to track limitation: " + 0);
+		execPanel.add(unreceivedTweetsIndicator, new CC().span(2));
 		
-		JScrollPane scrollPaneTweets = new JScrollPane(listTweets);
-		panelRunning.add(scrollPaneTweets, new CC().grow().pushX().growX().wrap());
+		// Construct Models
+		sentimentModel = new CompaniesSentimentTableModel(sentiment);
+		sentimentIndicator.setModel(sentimentModel);
 		
-		final JLabel lblPreMissed = new JLabel("Unreceived tweets due to track limitation: "
-		    + 0);
+		tweetsModel = new TweetViewerTableModel(sentiment);
+		tweetsIndicator.setModel(tweetsModel);
 		
-		Timer timerUnreceivedTweets = new Timer();
-		timerUnreceivedTweets.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				lblPreMissed.setText("Unreceived tweets due to track limitation: " +
-					     sentiment.getNumberOfLimitedStatuses());
-			}
-		}, guiPollingWaitInMilliseconds, guiPollingPeriodInMilliseconds);
-		panelRunning.add(lblPreMissed, new CC().span(2));
+		// Configure Components
+		splitPane.setDividerLocation(300);
 		
-		listModelTweetViewer.setSize(listTweets.getWidth());
+		sentimentIndicator.getSelectionModel().setSelectionMode(
+				ListSelectionModel.SINGLE_SELECTION);
 		
-		tableAll.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			
+		tweetsIndicator.setDefaultRenderer(Object.class,
+				new TweetViewerTableRenderer());
+		tweetsIndicator.setAutoCreateColumnsFromModel(false);
+		tweetsIndicator.getColumnModel().getColumn(0).setHeaderValue(" ");
+		
+		// Add Listeners
+		JViewport tweetsViewport = tweetsScroller.getViewport();
+		final ResizesRowsOnScrollChangeListener tweetsScrollListener =
+				new ResizesRowsOnScrollChangeListener(
+						tweetsViewport, tweetsIndicator, tweetsModel);
+		tweetsViewport.addChangeListener(tweetsScrollListener);
+		
+		sentimentIndicator.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
-				int[] indexes = tableAll.getSelectedRows();
+				int[] indexes = sentimentIndicator.getSelectedRows();
 				if (indexes.length == 0) {
-					lblFocus.setText("");
 					return;
 				}
 				int rowIndex = indexes[0];
-				String ticker = (String) tableAll.getValueAt(rowIndex, 0);
-				String name = (String) tableAll.getValueAt(rowIndex, 1);
-				String displayName;
-				if (name.contains("<html>")) {
-					displayName = "Unknown Tweets";
-					listModelTweetViewer.setSize(listTweets.getWidth());
-					listModelTweetViewer.setCompany(null);
+				String ticker = (String) sentimentIndicator.getValueAt(rowIndex, 0);
+				if (ticker.length() == 0) {
+					tweetsModel.setCompany(null);
 				} else {
-					displayName = name + " (" + ticker + ")";
-					listModelTweetViewer.setSize(listTweets.getWidth());
-					listModelTweetViewer.setCompany(ticker);
+					tweetsModel.setCompany(ticker);
 				}
-				lblFocus.setText((new Date()).toString() + ": " + displayName);
+				
+				tweetsIndicator.getColumnModel().getColumn(0).setHeaderValue(
+						new Date().toString());
+				tweetsIndicator.getTableHeader().resizeAndRepaint();
+				
+				tweetsIndicator.scrollRectToVisible(tweetsIndicator.getCellRect(0, 0, true));
+				tweetsScrollListener.resetSeen();
 			}
 		});
 		
-		return panelRunning;
+		// Set Timers
+		Timer unreceivedTweetsUpdated = new Timer();
+		unreceivedTweetsUpdated.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				unreceivedTweetsIndicator.setText("Unreceived tweets due to track limitation: " +
+					     sentiment.getNumberOfLimitedStatuses());
+			}
+		}, guiPollingWaitInMilliseconds, guiPollingPeriodInMilliseconds);
+		
+		return execPanel;
 	}
 	
 	/**
@@ -228,96 +231,96 @@ public class SentimentViewer {
 	 */
 	private void initialize() {
 		
-		final String msgStart = "Start";
-		final String msgRunning = "Stop";
+		final String startMessage = "Start";
+		final String stopMessage = "Stop";
 		
 		final SentimentServer sentiment = new SentimentServer();
 		
 		frame = new JFrame();
 		frame.setBounds(100, 100, 800, 600);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(
-		    new MigLayout("fill"));
+		frame.getContentPane().setLayout(new MigLayout("fill"));
 		
-		final JPanel panelContent = new JPanel();
+		final JPanel mainContentPanel = new JPanel();
 		final CardLayout cardLayout = new CardLayout();
-		panelContent.setLayout(cardLayout);
-		final JPanel panelStarting = generateStartingPanel();
+		mainContentPanel.setLayout(cardLayout);
+		final JPanel panelStarting = generateInitialPanel();
 		final JPanel panelRunning = generateRunningPanel(sentiment);
-		panelContent.add(panelStarting, msgStart);
-		panelContent.add(panelRunning, msgRunning);
-		frame.getContentPane().add(panelContent, new CC().dockNorth().grow().push().wrap());
+		mainContentPanel.add(panelStarting, startMessage);
+		mainContentPanel.add(panelRunning, stopMessage);
+		frame.getContentPane().add(mainContentPanel,
+				new CC().dockNorth().grow().push().wrap());
 		
-		final JPanel panelCommon = new JPanel();
-		panelCommon.setLayout(new MigLayout("fill"));
-		frame.getContentPane().add(panelCommon, new CC().dockSouth().growX().pushX());
+		final JPanel commonContentPanel = new JPanel();
+		commonContentPanel.setLayout(new MigLayout("fill"));
+		frame.getContentPane().add(commonContentPanel,
+				new CC().dockSouth().growX().pushX());
 		
-		final String strInterval = "Interval (mins)";
-		final JLabel labelInterval = new JLabel(strInterval);
-		panelCommon.add(labelInterval);
+		final String intervalMessage = "Interval (mins)";
+		final JLabel intervalIndicator = new JLabel(intervalMessage);
+		commonContentPanel.add(intervalIndicator);
 		
-		final JSpinner spinnerInterval = new JSpinner(new SpinnerNumberModel(5, .5, 60, 1));
-		panelCommon.add(spinnerInterval, new CC());
+		final JSpinner intervalController = new JSpinner(
+				new SpinnerNumberModel(5, .5, 60, 1));
+		commonContentPanel.add(intervalController, new CC());
 		
-		final JButton btnStart = new JButton(msgStart);
-		panelCommon.add(btnStart, new CC().grow());
+		final JButton startController = new JButton(startMessage);
+		commonContentPanel.add(startController, new CC().grow());
 		
-		btnStart.addActionListener(new ActionListener() {
+		startController.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				if (btnStart.getText().contentEquals(msgStart)) {
-					btnStart.setText(msgRunning);
-					spinnerInterval.setEnabled(false);
-					labelInterval.setToolTipText("Until there are tweets from "
-					    + "the full interval, this indicator will be red");
-					labelInterval.setText("<html><font style=\"color:red\">"
-					    + strInterval
+				if (startController.getText().contentEquals(startMessage)) {
+					startController.setText(stopMessage);
+					intervalController.setEnabled(false);
+					intervalIndicator.setToolTipText("Until there are tweets" +
+					    " from the full interval, this indicator will be red");
+					intervalIndicator.setText("<html><font style='color:red'>"
+					    + intervalMessage
 					    + "</font></html>");
 					long waitInMilliSeconds =
-					    ((Double) spinnerInterval.getValue()).longValue()
+					    ((Double) intervalController.getValue()).longValue()
 					    * 60 * 1000;
-					Timer timer = new Timer();
-					timer.schedule(new TimerTask() {
+					Timer intervalFinishedUpdateder = new Timer();
+					intervalFinishedUpdateder.schedule(new TimerTask() {
 						@Override
 						public void run() {
-							labelInterval.setText(
-							    "<html><font style=\"color:green\">"
-							    + strInterval
-							    + "Interval (mins)</font></html>");
+							intervalIndicator.setText(
+							    "<html><font style='color:green'>"
+							    + intervalMessage
+							    + "</font></html>");
 						}
 					}, waitInMilliSeconds);
-					cardLayout.last(panelContent);
+					cardLayout.last(mainContentPanel);
 					sentiment.setCompanies(
-					    tableModelCompaniesToView.getCompaniesTickers());
-					tableModelCompaniesSentiment.updateTickers();
+					    selectedCompaniesModel.getCompaniesTickers());
+					sentimentModel.updateTickers();
 					sentiment.startServer();
-					Timer timer2 = new Timer();
-					timer2.schedule(new TimerTask() {
+					Timer sentimentIndicatorsUpdater = new Timer();
+					sentimentIndicatorsUpdater.schedule(new TimerTask() {
 						@Override
 						public void run() {
-							tableModelCompaniesSentiment.updateCounters();
+							sentimentModel.updateCounters();
 						}
 					}, guiPollingWaitInMilliseconds, guiPollingPeriodInMilliseconds);
-				} else if (btnStart.getText().contentEquals(msgRunning)) {
-					btnStart.setText(msgStart);
-					spinnerInterval.setEnabled(true);
-					labelInterval.setToolTipText("");
-					labelInterval.setText("Interval (mins)");
-					cardLayout.first(panelContent);
+				} else if (startController.getText().contentEquals(stopMessage)) {
+					startController.setText(startMessage);
+					intervalController.setEnabled(true);
+					intervalIndicator.setToolTipText("");
+					intervalIndicator.setText("Interval (mins)");
+					cardLayout.first(mainContentPanel);
 					sentiment.stopServer();
-					listModelTweetViewer.clearTweets();
-				} else {
-					throw new RuntimeException("Button out of Sync. No idea how.");
+					tweetsModel.clearTweets();
 				}
 			}
 		});
 		
-		cardLayout.first(panelContent);
+		cardLayout.first(mainContentPanel);
 		
-		tableModelCompaniesToView.addCompany("GOOG");
-		tableModelCompaniesToView.addCompany("AMZN");
-		tableModelCompaniesToView.addCompany("AAPL");
-		tableModelCompaniesToView.addCompany("MSFT");
+		selectedCompaniesModel.addCompany("GOOG");
+		selectedCompaniesModel.addCompany("AMZN");
+		selectedCompaniesModel.addCompany("AAPL");
+		selectedCompaniesModel.addCompany("MSFT");
 	}
 
 }

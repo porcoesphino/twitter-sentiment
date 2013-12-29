@@ -6,6 +6,13 @@ import javax.swing.table.AbstractTableModel;
 
 import com.porcoesphino.twitterSentiment.SandP500Lookup;
 
+/**
+ * This TableModel models S&P companies sorted alphabetically.
+ * It locally uses the companies tickers and looks up extra
+ * information using the SandP500Lookup singleton.
+ * 
+ * @author bodey.baker@gmail.com
+ */
 public class SortedCompanyTableModel extends AbstractTableModel {
 	
 	private static final long serialVersionUID = SentimentViewer.serialVersionUID;
@@ -33,7 +40,17 @@ public class SortedCompanyTableModel extends AbstractTableModel {
 		}
 		return -1;
 	}
-
+	
+	public SortedCompanyTableModel() {}
+	
+	public SortedCompanyTableModel(String[] tickers) {
+		for (String ticker : tickers) {
+			if (!companyTickers.contains(ticker)) {
+				addSorted(ticker, companyTickers);
+			}
+		}
+	}
+	
 	public void addCompany(String ticker) {
 		if (companyTickers.contains(ticker)) {
 			return;

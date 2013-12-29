@@ -9,7 +9,7 @@ import twitter4j.StatusListener;
 import twitter4j.TwitterException;
 
 /**
- * A StatusListener designed to remove the uglier junk out of the
+ * A StatusListener purposed to remove the uglier junk out of
  * CompaniesFilter for readability.
  * 
  * @author bodeybaker@gmail.com

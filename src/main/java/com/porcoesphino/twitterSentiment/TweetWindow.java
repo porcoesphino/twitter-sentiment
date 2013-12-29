@@ -5,6 +5,13 @@ import java.util.Queue;
 
 import twitter4j.Status;
 
+/**
+ * TweetWindow keeps track of the tweets that have been seen over the
+ * duration we are interested in and provides access to a cloned copy
+ * of those tweets and the current tally.
+ * 
+ * @author bodey.baker@gmail.com
+ */
 public class TweetWindow {
 	
 	public class Tweet {
@@ -31,7 +38,7 @@ public class TweetWindow {
 		Tweet[] tweets = new Tweet[tweetsInWindow.size()];
 		int index = 0;
 		for (Status status : tweetsInWindow) {
-			tweets[index] = new Tweet(status.getUser().getName(), status.getText());
+			tweets[index] = new Tweet(status.getUser().getScreenName(), status.getText());
 			index++;
 		}
 		return tweets;
