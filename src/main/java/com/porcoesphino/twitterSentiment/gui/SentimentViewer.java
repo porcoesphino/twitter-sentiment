@@ -213,9 +213,7 @@ public class SentimentViewer {
 				tweetsIndicator.getColumnModel().getColumn(0).setHeaderValue(
 						new Date().toString());
 				tweetsIndicator.getTableHeader().resizeAndRepaint();
-				
 				tweetsIndicator.scrollRectToVisible(tweetsIndicator.getCellRect(0, 0, true));
-				tweetsScrollListener.resetSeen();
 			}
 		});
 		

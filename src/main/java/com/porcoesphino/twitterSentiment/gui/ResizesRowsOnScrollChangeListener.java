@@ -8,6 +8,8 @@ import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
 /**
@@ -29,10 +31,11 @@ public class ResizesRowsOnScrollChangeListener implements ChangeListener {
 		this.viewport = viewport;
 		this.model = model;
 		maxSeenRow = 0;
-	}
-	
-	public void resetSeen() {
-		maxSeenRow = 0;
+		model.addTableModelListener(new TableModelListener() {
+			public void tableChanged(TableModelEvent e) {
+				maxSeenRow = 0;
+			}
+		});
 	}
 	
 	public void stateChanged(ChangeEvent e) {
@@ -44,15 +47,6 @@ public class ResizesRowsOnScrollChangeListener implements ChangeListener {
 			return;
 		}
 		
-		// Occasionally this ChangeListener gets called before the rows
-		// can be resized successfully. This is a sledge hammer fix.
-		Component comp = table.prepareRenderer(
-					table.getCellRenderer(0, column),
-						0, column);
-		if (comp.getSize().height != comp.getPreferredSize().height) {
-			maxSeenRow = 0;
-		}
-		
 		int last = table.rowAtPoint(new Point(0, viewRect.y
 				+ viewRect.height - 1));
 		if (last == -1) {
@@ -60,7 +54,7 @@ public class ResizesRowsOnScrollChangeListener implements ChangeListener {
 		}
 		if (last == 0 || last > maxSeenRow) {
 			for (int row = maxSeenRow; row <= last; row++) {
-				comp = table.prepareRenderer(
+				Component comp = table.prepareRenderer(
 						table.getCellRenderer(row, column),
 							row, column);
 				int rowHeight = comp.getPreferredSize().height;
