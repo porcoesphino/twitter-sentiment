@@ -1,6 +1,5 @@
 package com.porcoesphino.twitterSentiment.gui;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -10,6 +9,10 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.table.TableCellRenderer;
+
+import net.miginfocom.layout.CC;
+import net.miginfocom.layout.LC;
+import net.miginfocom.swing.MigLayout;
 
 import com.porcoesphino.twitterSentiment.TweetWindow.Tweet;
 
@@ -23,12 +26,18 @@ public class TweetViewerTableRenderer implements TableCellRenderer {
 	private static final String strColor = "#EDF5F4";
 	private static final Color strideColor = Color.decode(strColor);
 
-	JPanel tweetPanel = new JPanel();
-	JLabel tweetName = new JLabel();
-	JTextArea tweetMessage = new JTextArea();
-	Tweet toRender = null;
+	JPanel tweetPanel;
+	JLabel tweetName;
+	JTextArea tweetMessage;
+	Tweet toRender;
 
 	public TweetViewerTableRenderer() {
+		
+		tweetPanel = new JPanel(new MigLayout(new LC().fillX()));
+		tweetName = new JLabel();
+		tweetMessage = new JTextArea();
+		toRender = null;
+		
 		tweetMessage.setWrapStyleWord(false);
 		tweetMessage.setLineWrap(true);
 		tweetMessage.setOpaque(false);
@@ -38,9 +47,8 @@ public class TweetViewerTableRenderer implements TableCellRenderer {
 		tweetName.setFont(boldFont);
 		tweetName.setOpaque(false);
 
-		tweetPanel.setLayout(new BorderLayout());
-		tweetPanel.add(tweetName, BorderLayout.NORTH);
-		tweetPanel.add(tweetMessage, BorderLayout.SOUTH);
+		tweetPanel.add(tweetName, new CC().wrap().growX());
+		tweetPanel.add(tweetMessage, new CC().growX());
 	}
 
 	public Component getTableCellRendererComponent(JTable table, Object value,
