@@ -20,6 +20,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -181,6 +182,8 @@ public class SentimentViewer {
 		sentimentIndicator.getSelectionModel().setSelectionMode(
 				ListSelectionModel.SINGLE_SELECTION);
 		
+		tweetsScroller.setVerticalScrollBarPolicy(
+				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		tweetsIndicator.setDefaultRenderer(Object.class,
 				new TweetViewerTableRenderer());
 		tweetsIndicator.setAutoCreateColumnsFromModel(false);
