@@ -42,6 +42,7 @@ public class SentimentViewer {
 	private SortedCompanyTableModel selectedCompaniesModel;
 	private CompaniesSentimentTableModel sentimentModel;
 	private TweetViewerTableModel tweetsModel;
+	private JTable sentimentIndicator;
 	
 	private JFrame frame;
 	private final int sentimentTableInitialWidth = 400;
@@ -152,7 +153,7 @@ public class SentimentViewer {
 		JPanel execPanel = new JPanel();
 		execPanel.setLayout(new MigLayout("fill"));
 		
-		final JTable sentimentIndicator = new JTable();
+		sentimentIndicator = new JTable();
 		JScrollPane sentimentScroller = new JScrollPane(sentimentIndicator);
 		
 		final JTable tweetsIndicator = new JTable();
@@ -294,12 +295,13 @@ public class SentimentViewer {
 							    + "</font></html>");
 						}
 					}, windowInMilliSeconds);
-					cardLayout.last(mainContentPanel);
 					sentiment.setCompanies(
 					    selectedCompaniesModel.getCompaniesTickers());
 					sentimentModel.updateTickers();
 					sentiment.setWindow(windowInMilliSeconds);
 					sentiment.startServer();
+					SwingHelper.resizeTableColumns(sentimentIndicator);
+					cardLayout.last(mainContentPanel);
 					Timer sentimentIndicatorsUpdater = new Timer();
 					sentimentIndicatorsUpdater.schedule(new TimerTask() {
 						@Override
