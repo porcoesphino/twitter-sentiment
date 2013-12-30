@@ -36,20 +36,31 @@ public class ResizesRowsOnScrollChangeListener implements ChangeListener {
 	}
 	
 	public void stateChanged(ChangeEvent e) {
+		
+		int column = 0;
 		Rectangle viewRect = viewport.getViewRect();
 		int first = table.rowAtPoint(new Point(0, viewRect.y));
 		if (first == -1) {
 			return;
 		}
+		
+		// Occasionally this ChangeListener gets called before the rows
+		// can be resized successfully. This is a sledge hammer fix.
+		Component comp = table.prepareRenderer(
+					table.getCellRenderer(0, column),
+						0, column);
+		if (comp.getSize().height != comp.getPreferredSize().height) {
+			maxSeenRow = 0;
+		}
+		
 		int last = table.rowAtPoint(new Point(0, viewRect.y
 				+ viewRect.height - 1));
 		if (last == -1) {
 			last = model.getRowCount() - 1;
 		}
 		if (last == 0 || last > maxSeenRow) {
-			int column = 0;
 			for (int row = maxSeenRow; row <= last; row++) {
-				Component comp = table.prepareRenderer(
+				comp = table.prepareRenderer(
 						table.getCellRenderer(row, column),
 							row, column);
 				int rowHeight = comp.getPreferredSize().height;
