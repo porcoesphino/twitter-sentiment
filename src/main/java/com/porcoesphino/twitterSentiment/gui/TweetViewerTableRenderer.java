@@ -3,6 +3,8 @@ package com.porcoesphino.twitterSentiment.gui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -28,15 +30,19 @@ public class TweetViewerTableRenderer implements TableCellRenderer {
 
 	JPanel tweetPanel;
 	JLabel tweetName;
+	JLabel tweetDate;
 	JTextArea tweetMessage;
 	Tweet toRender;
+	DateFormat dateFormat;
 
 	public TweetViewerTableRenderer() {
 		
 		tweetPanel = new JPanel(new MigLayout(new LC().fillX()));
 		tweetName = new JLabel();
+		tweetDate = new JLabel();
 		tweetMessage = new JTextArea();
 		toRender = null;
+		dateFormat = new SimpleDateFormat("HH:mm:ss");
 		
 		tweetMessage.setWrapStyleWord(false);
 		tweetMessage.setLineWrap(true);
@@ -47,8 +53,9 @@ public class TweetViewerTableRenderer implements TableCellRenderer {
 		tweetName.setFont(boldFont);
 		tweetName.setOpaque(false);
 
-		tweetPanel.add(tweetName, new CC().wrap().growX());
-		tweetPanel.add(tweetMessage, new CC().growX());
+		tweetPanel.add(tweetName, new CC().growX().pushX());
+		tweetPanel.add(tweetDate, new CC().wrap());
+		tweetPanel.add(tweetMessage, new CC().growX().span(2));
 	}
 
 	public Component getTableCellRendererComponent(JTable table, Object value,
@@ -57,7 +64,19 @@ public class TweetViewerTableRenderer implements TableCellRenderer {
 		if (toRender != value) {
 			toRender = (Tweet) value;
 			tweetName.setText("@" + toRender.user);
+			tweetDate.setText(dateFormat.format(toRender.created));
 			tweetMessage.setText(toRender.message);
+			if (toRender.words == null) {
+				tweetPanel.setToolTipText(null);
+			} else {
+				StringBuilder sb = new StringBuilder(toRender.message.length());
+				for (String word : toRender.words) {
+					sb.append(word);
+					sb.append(' ');
+				}
+				sb.deleteCharAt(sb.length()-1);
+				tweetPanel.setToolTipText(sb.toString());
+			}
 
 			if (row % 2 == 0) {
 				tweetPanel.setBackground(strideColor);

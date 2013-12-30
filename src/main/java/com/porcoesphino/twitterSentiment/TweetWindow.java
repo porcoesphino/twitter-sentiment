@@ -16,13 +16,17 @@ import twitter4j.Status;
  */
 public class TweetWindow {
 	
-	public class Tweet {
+	public static class Tweet {
 		public final String user;
 		public final String message;
+		public final String[] words;
+		public final Date created;
 		
-		Tweet(String user, String message) {
-			this.user = user;
-			this.message = message;
+		private Tweet(StatusAndMeta statusAndMeta) {
+			this.user = statusAndMeta.status.getUser().getScreenName();
+			this.message = statusAndMeta.status.getText();
+			this.created = statusAndMeta.status.getCreatedAt();
+			this.words = statusAndMeta.words;
 		}
 	}
 	
@@ -76,9 +80,7 @@ public class TweetWindow {
 		Tweet[] tweets = new Tweet[tweetsInWindow.size()];
 		int index = 0;
 		for (StatusAndMeta statusAndMeta : tweetsInWindow) {
-			tweets[index] = new Tweet(
-					statusAndMeta.status.getUser().getScreenName(),
-					statusAndMeta.status.getText());
+			tweets[index] = new Tweet(statusAndMeta);
 			index++;
 		}
 		return tweets;
