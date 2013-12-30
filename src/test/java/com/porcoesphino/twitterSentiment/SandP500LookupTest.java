@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.text.ParseException;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class SandP500LookupTest {
@@ -30,6 +31,11 @@ public class SandP500LookupTest {
 		assertEquals("Didn't remove suffix from [" + original + "] to [" +
 		    expected + "] instead [" + result + "]",
 		    result, expected);
+	}
+	
+	@Test
+	public void removingSuffixDotCom() {
+		testRemoveSuffixes("Amazon.com Inc", "Amazon");
 	}
 	
 	@Test

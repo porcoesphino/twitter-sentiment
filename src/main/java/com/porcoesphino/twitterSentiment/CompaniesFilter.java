@@ -114,11 +114,14 @@ public class CompaniesFilter extends AbstractTweetListener{
 	 * @see twitter4j.StatusListener#onStatus(twitter4j.Status)
 	 */
 	public void onStatus(Status status) {
-		//System.out.println("? " + status.getText());
 		String text = status.getText();
-		String[] words = CompanyTweetParser.splitIntoWords(text);
-		StatusAndMeta statusAndMeta = new StatusAndMeta(status, words);
+		String[] words = CompanyTweetParser.splitTweetIntoWords(text);
+		if (words.length == 1 && words[0].length() == 0) {
+			unmatchedTweets.addTweet(new StatusAndMeta(status, null));
+			return;
+		}
 		boolean found = false;
+		StatusAndMeta statusAndMeta = new StatusAndMeta(status, words);
 		for (CompanyTweetParser parser : companyParsers.values()) {
 			if (parser.addIfForThisCompany(statusAndMeta)) {
 				found = true;

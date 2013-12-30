@@ -31,7 +31,7 @@ public enum SandP500Lookup {
 				return companyName;
 			}
 		}
-		String[] suffixes = new String[]{" Co", " Co.", " Co. Inc.",
+		String[] suffixes = new String[]{".com", ".com Inc", " Co", " Co.", " Co. Inc.",
 			    " Company", " Company A", " Corp", " Corp.", " Corporation",
 			    " Enterprises",
 			    " Financial",
