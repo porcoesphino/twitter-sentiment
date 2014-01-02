@@ -51,6 +51,7 @@ public abstract class AbstractTweetListener implements StatusListener {
 	 * @see twitter4j.StatusListener#onStallWarning(twitter4j.StallWarning)
 	 */
 	public void onStallWarning(StallWarning warning) {
-		System.err.println("Got stall warning:" + warning);
+		System.err.println("Got a stall warning. We're processing data too slow.\n"
+				+ warning);
 	}
 }
