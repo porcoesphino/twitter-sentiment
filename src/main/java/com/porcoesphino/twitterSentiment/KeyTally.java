@@ -98,6 +98,5 @@ public class KeyTally<K> {
 		}
 		sb.deleteCharAt(sb.length()-1);
 		System.out.println(sb.toString());
-		System.out.println("Done!");
 	}
 }
