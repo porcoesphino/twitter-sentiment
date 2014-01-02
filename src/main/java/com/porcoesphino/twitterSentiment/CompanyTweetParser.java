@@ -1,5 +1,6 @@
 package com.porcoesphino.twitterSentiment;
 
+import java.util.List;
 import java.util.regex.Pattern;
 
 import com.porcoesphino.twitterSentiment.TweetWindow.StatusAndMeta;
@@ -58,7 +59,11 @@ public class CompanyTweetParser {
 	 * errors
 	 */
 	public static String[] splitTweetIntoWords(String message) {
-		return splitOnWhiteSpaceAndSymbols(trim(removeWebsite(message)));
+		String[] words = splitOnWhiteSpaceAndSymbols(trim(removeWebsite(message)));
+		for (int i=0; i<words.length; i++) {
+			words[i] = words[i].toLowerCase();
+		}
+		return words;
 	}
 
 	public final String ticker;
@@ -123,5 +128,13 @@ public class CompanyTweetParser {
 
 	public Tweet[] getTweets() {
 		return companiesTweets.getTweets();
+	}
+	
+	public Integer getWordFrequency(String word) {
+		return companiesTweets.getWordFrequency(word);
+	}
+	
+	public List<? extends List<String>> getNMostFrequentTallies(int n) {
+		return companiesTweets.getNMostFrequentTallies(n);
 	}
 }

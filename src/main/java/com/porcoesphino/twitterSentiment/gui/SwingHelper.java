@@ -23,7 +23,7 @@ public class SwingHelper {
 			
 			if (i == table.getColumnCount() -1) {
 				col.setPreferredWidth(table.getWidth() - totalWidth);
-				table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+				table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 				return;
 			}
 			

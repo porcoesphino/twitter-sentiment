@@ -2,6 +2,7 @@ package com.porcoesphino.twitterSentiment;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 
 import com.porcoesphino.twitterSentiment.TweetWindow.StatusAndMeta;
 import com.porcoesphino.twitterSentiment.TweetWindow.Tweet;
@@ -100,6 +101,16 @@ public class CompaniesFilter extends AbstractTweetListener{
 	
 	public int getNumberOfLimitedStatuses() {
 		return numberOfLimitedStatuses;
+	}
+	
+	public Integer getWordFrequencyForCompany(String ticker, String word) {
+		CompanyTweetParser parser = companyParsers.get(ticker);
+		return parser.getWordFrequency(word);
+	}
+	
+	public List<? extends List<String>> getNMostFrequentTalliesForCompany(String ticker, int n) {
+		CompanyTweetParser parser = companyParsers.get(ticker);
+		return parser.getNMostFrequentTallies(n);
 	}
 	
 	/* (non-Javadoc)

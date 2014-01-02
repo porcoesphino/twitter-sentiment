@@ -2,6 +2,7 @@ package com.porcoesphino.twitterSentiment;
 
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 import twitter4j.Status;
@@ -47,13 +48,20 @@ public class TweetWindow {
 	}
 	
 	private final Queue<StatusAndMeta> tweetsInWindow = new LinkedList<StatusAndMeta>();
+	private final KeyTally<String> wordFrequencies = new KeyTally<String>();
 	long windowInMilliseconds;
 	
 	private void updateQueue() {
 		long currentTimestamp = (new Date()).getTime();
 		while (tweetsInWindow.size() > 0) {
-			Long firstTweetTimestamp = tweetsInWindow.peek().creationTimestamp;
+			StatusAndMeta oldestTweet = tweetsInWindow.peek();
+			Long firstTweetTimestamp = oldestTweet.creationTimestamp;
 			if (firstTweetTimestamp < currentTimestamp - windowInMilliseconds) {
+				if (oldestTweet.words != null) {
+					for (String word : oldestTweet.words) {
+						wordFrequencies.incrementKey(word, -1);
+					}
+				}
 				tweetsInWindow.remove();
 			} else {
 				break;
@@ -70,9 +78,22 @@ public class TweetWindow {
 		return tweetsInWindow.size();
 	}
 	
+	public synchronized Integer getWordFrequency(String word) {
+		return wordFrequencies.getTally(word);
+	}
+	
+	public synchronized List<? extends List<String>> getNMostFrequentTallies(int n) {
+		return wordFrequencies.getNMostFrequentTallies(n);
+	}
+	
 	public synchronized void addTweet(StatusAndMeta statusAndMeta) {
 		updateQueue();
 		tweetsInWindow.add(statusAndMeta);
+		if (statusAndMeta.words != null) {
+			for (String word : statusAndMeta.words) {
+				wordFrequencies.incrementKey(word, 1);
+			}
+		}
 	}
 	
 	public synchronized Tweet[] getTweets() {

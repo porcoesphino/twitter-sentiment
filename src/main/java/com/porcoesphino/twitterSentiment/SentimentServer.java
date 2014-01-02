@@ -5,6 +5,7 @@ import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.text.ParseException;
+import java.util.List;
 
 import com.porcoesphino.twitterSentiment.TweetWindow.Tweet;
 
@@ -100,6 +101,20 @@ public class SentimentServer {
 			return new Tweet[0];
 		}
 		return companiesFilter.getUnmatchedTweets();
+	}
+	
+	public Integer getWordFrequencyForCompany(String ticker, String word) {
+		if (companiesFilter == null) {
+			return 0;
+		}
+		return companiesFilter.getWordFrequencyForCompany(ticker, word);
+	}
+	
+	public List<? extends List<String>> getNMostFrequentTalliesForCompany(String ticker, int n) {
+		if (companiesFilter == null) {
+			return null;
+		}
+		return companiesFilter.getNMostFrequentTalliesForCompany(ticker, n);
 	}
 	
 	public static void main(String[] args) {

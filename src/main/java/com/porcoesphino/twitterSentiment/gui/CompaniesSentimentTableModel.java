@@ -1,5 +1,6 @@
 package com.porcoesphino.twitterSentiment.gui;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.SwingWorker;
@@ -106,6 +107,52 @@ public class CompaniesSentimentTableModel extends AbstractTableModel {
 			}
 		};
 		counterUpdater.execute();
+		
+		SwingWorker<String[], Void> wordUpdater = new SwingWorker<String[], Void> () {
+			@Override
+			protected String[] doInBackground() throws Exception {
+				String[] newWords = new String[tickerList.length+1]; 
+				for (int rowIndex = 0; rowIndex < tickerList.length; rowIndex++) {
+					String ticker = tickerList[rowIndex];
+					List<? extends List<String>> frequentWords
+							= sentiment.getNMostFrequentTalliesForCompany(ticker, 10);
+					StringBuilder sb = new StringBuilder();
+					if (frequentWords != null) {
+						for (int level = 0; level<frequentWords.size(); level++) {
+							boolean needFirst = true;
+							for (String word : frequentWords.get(level)) {
+								if (needFirst) {
+									sb.append(sentiment.getWordFrequencyForCompany(ticker, word));
+									sb.append(": ");
+									needFirst = false;
+								}
+								sb.append(word);
+								sb.append(", ");
+							}
+						}
+						if (sb.length() > 2) { 
+							sb.delete(sb.length()-2, sb.length()-1);
+						}
+					}
+					newWords[rowIndex] = sb.toString();
+				}
+				return newWords;
+			}
+			@Override
+			protected void done() {
+				try {
+					frequentWordsList = get();
+					for (int rowIndex = 0; rowIndex <= tickerList.length; rowIndex++) {
+						fireTableCellUpdated(rowIndex, 3);
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		wordUpdater.execute();
 	}
 	
 	public void updateTickers() {
