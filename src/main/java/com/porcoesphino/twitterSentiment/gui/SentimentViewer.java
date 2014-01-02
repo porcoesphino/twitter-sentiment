@@ -46,7 +46,7 @@ public class SentimentViewer {
 	private JTable sentimentIndicator;
 	
 	private JFrame frame;
-	private final int sentimentTableInitialWidth = 400;
+	private final int sentimentTableInitialWidth = 600;
 	private final int guiPollingPeriodInMilliseconds = 100;
 	private final int guiPollingWaitInMilliseconds = 0;
 	private final int initialWindowInMinutes = 1;
