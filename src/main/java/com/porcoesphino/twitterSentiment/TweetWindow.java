@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 
 import twitter4j.Status;
 
@@ -82,8 +83,8 @@ public class TweetWindow {
 		return wordFrequencies.getTally(word);
 	}
 	
-	public synchronized List<? extends List<String>> getNMostFrequentTallies(int n) {
-		return wordFrequencies.getNMostFrequentTallies(n);
+	public synchronized List<? extends Set<String>> getNMostFrequentTallies(int n) {
+		return wordFrequencies.getNMostFrequentTallySets(n);
 	}
 	
 	public synchronized void addTweet(StatusAndMeta statusAndMeta) {

@@ -1,6 +1,7 @@
 package com.porcoesphino.twitterSentiment;
 
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.porcoesphino.twitterSentiment.TweetWindow.StatusAndMeta;
@@ -134,7 +135,7 @@ public class CompanyTweetParser {
 		return companiesTweets.getWordFrequency(word);
 	}
 	
-	public List<? extends List<String>> getNMostFrequentTallies(int n) {
+	public List<? extends Set<String>> getNMostFrequentTallies(int n) {
 		return companiesTweets.getNMostFrequentTallies(n);
 	}
 }

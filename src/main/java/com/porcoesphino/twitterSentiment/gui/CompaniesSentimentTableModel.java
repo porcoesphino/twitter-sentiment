@@ -1,6 +1,7 @@
 package com.porcoesphino.twitterSentiment.gui;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.SwingWorker;
@@ -114,7 +115,7 @@ public class CompaniesSentimentTableModel extends AbstractTableModel {
 				String[] newWords = new String[tickerList.length+1]; 
 				for (int rowIndex = 0; rowIndex < tickerList.length; rowIndex++) {
 					String ticker = tickerList[rowIndex];
-					List<? extends List<String>> frequentWords
+					List<? extends Set<String>> frequentWords
 							= sentiment.getNMostFrequentTalliesForCompany(ticker, 10);
 					StringBuilder sb = new StringBuilder();
 					if (frequentWords != null) {

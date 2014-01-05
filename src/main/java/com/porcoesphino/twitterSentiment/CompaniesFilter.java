@@ -3,6 +3,7 @@ package com.porcoesphino.twitterSentiment;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import com.porcoesphino.twitterSentiment.TweetWindow.StatusAndMeta;
 import com.porcoesphino.twitterSentiment.TweetWindow.Tweet;
@@ -108,7 +109,7 @@ public class CompaniesFilter extends AbstractTweetListener{
 		return parser.getWordFrequency(word);
 	}
 	
-	public List<? extends List<String>> getNMostFrequentTalliesForCompany(String ticker, int n) {
+	public List<? extends Set<String>> getNMostFrequentTalliesForCompany(String ticker, int n) {
 		CompanyTweetParser parser = companyParsers.get(ticker);
 		return parser.getNMostFrequentTallies(n);
 	}

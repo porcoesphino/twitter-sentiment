@@ -6,6 +6,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Set;
 
 import com.porcoesphino.twitterSentiment.TweetWindow.Tweet;
 
@@ -110,7 +111,7 @@ public class SentimentServer {
 		return companiesFilter.getWordFrequencyForCompany(ticker, word);
 	}
 	
-	public List<? extends List<String>> getNMostFrequentTalliesForCompany(String ticker, int n) {
+	public List<? extends Set<String>> getNMostFrequentTalliesForCompany(String ticker, int n) {
 		if (companiesFilter == null) {
 			return null;
 		}

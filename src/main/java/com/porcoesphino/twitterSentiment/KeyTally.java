@@ -2,7 +2,7 @@ package com.porcoesphino.twitterSentiment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -12,11 +12,11 @@ import java.util.TreeMap;
 public class KeyTally<K> {
 	
 	Map<K, Integer> keysToTallies;
-	TreeMap<Integer, LinkedList<K>> talliesToKeys;
+	TreeMap<Integer, Set<K>> talliesToKeys;
 	
 	public KeyTally() {
 		keysToTallies = new HashMap<K, Integer>();
-		talliesToKeys = new TreeMap<Integer, LinkedList<K>>();
+		talliesToKeys = new TreeMap<Integer, Set<K>>();
 	}
 	
 	public void incrementKey(K key, int amount) {
@@ -30,7 +30,7 @@ public class KeyTally<K> {
 		} else {
 		
 			// Remove previous reference, if it exists
-			LinkedList<K> wordsWithPreviousCount = talliesToKeys.get(tally);
+			Set<K> wordsWithPreviousCount = talliesToKeys.get(tally);
 			if (wordsWithPreviousCount != null) {
 				wordsWithPreviousCount.remove(key);
 				if (wordsWithPreviousCount.size() == 0) {
@@ -44,9 +44,11 @@ public class KeyTally<K> {
 		keysToTallies.put(key, tally);
 		
 		// Insert new reference
-		LinkedList<K> wordsWithNewCount = talliesToKeys.get(tally);
+		Set<K> wordsWithNewCount = talliesToKeys.get(tally);
 		if (wordsWithNewCount == null) {
-			wordsWithNewCount = new LinkedList<K>();
+			// Use a HashSet for speed and since
+			// we don't really care about order or iteration
+			wordsWithNewCount = new LinkedHashSet<K>();
 			talliesToKeys.put(tally, wordsWithNewCount);
 		}
 		wordsWithNewCount.add(key);
@@ -60,11 +62,13 @@ public class KeyTally<K> {
 		return tally;
 	}
 	
-	private List<? extends List<K>> getNTallies(int n, Set<Entry<Integer, LinkedList<K>>> entrySet) {
-		ArrayList<ArrayList<K>> result = new ArrayList<ArrayList<K>>();
+	private List<? extends Set<K>> getNTallySets(int n, Set<Entry<Integer, Set<K>>> entrySet) {
+		ArrayList<Set<K>> result = new ArrayList<Set<K>>();
 		int i = 0;
-		for (Entry<Integer, LinkedList<K>> entry : entrySet) {
-			ArrayList<K> clone = new ArrayList<K>(entry.getValue());
+		for (Entry<Integer, Set<K>> entry : entrySet) {
+			// Clone this so there is no reference to our internal data.
+			// Use a LinkedHashSet since the penalty for iterating is lower.
+			Set<K> clone = new LinkedHashSet<K>(entry.getValue());
 			result.add(i, clone);
 			i++;
 			if (i == n) {
@@ -74,19 +78,19 @@ public class KeyTally<K> {
 		return result;
 	}
 	
-	public List<? extends List<K>> getNMostFrequentTallies(int n) {
-		return getNTallies(n, talliesToKeys.descendingMap().entrySet());
+	public List<? extends Set<K>> getNMostFrequentTallySets(int n) {
+		return getNTallySets(n, talliesToKeys.descendingMap().entrySet());
 	}
 	
-	public List<? extends List<K>> getNLeastFrequentTallies(int n) {
-		return getNTallies(n, talliesToKeys.entrySet());
+	public List<? extends Set<K>> getNLeastFrequentTallySets(int n) {
+		return getNTallySets(n, talliesToKeys.entrySet());
 	}
 	
 	public void printFrequencyList() {
 		StringBuilder sb = new StringBuilder();
-		for (Entry<Integer, LinkedList<K>> entry : talliesToKeys.entrySet()) {
+		for (Entry<Integer, Set<K>> entry : talliesToKeys.entrySet()) {
 			int frequency = entry.getKey();
-			LinkedList<K> wordList = entry.getValue();
+			Set<K> wordList = entry.getValue();
 			sb.append(frequency);
 			sb.append(": ");
 			for (K word : wordList) {
