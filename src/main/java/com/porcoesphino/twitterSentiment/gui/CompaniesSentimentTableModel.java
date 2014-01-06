@@ -82,8 +82,10 @@ public class CompaniesSentimentTableModel extends AbstractTableModel {
 	}
 	
 	public void updateCounters() {
+		
 		if (counterUpdater != null) {
 			System.err.println("Polling the UI too fast");
+			return;
 		}
 		
 		counterUpdater = new SwingWorker<String[], Void> () {
