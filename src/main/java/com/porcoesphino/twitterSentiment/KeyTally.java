@@ -12,6 +12,9 @@ import java.util.TreeMap;
 public class KeyTally<K> {
 	
 	Map<K, Integer> keysToTallies;
+	// We want a sparse sorted array here
+	// This is probably a better option:
+	// https://code.google.com/p/android-source-browsing/source/browse/core/java/android/util/SparseArray.java?repo=platform--frameworks--base
 	TreeMap<Integer, Set<K>> talliesToKeys;
 	
 	public KeyTally() {
