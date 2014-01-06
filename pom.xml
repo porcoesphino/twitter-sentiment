@@ -21,7 +21,7 @@
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>1.2.1</version>
 				<configuration>
-					<mainClass>com.porcoesphino.twitterSentiment.App</mainClass>
+					<mainClass>com.porcoesphino.twitterSentiment.gui.SentimentServer</mainClass>
 				</configuration>
 			</plugin>
 		</plugins>
