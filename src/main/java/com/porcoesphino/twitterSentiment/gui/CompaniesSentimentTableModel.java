@@ -24,6 +24,8 @@ public class CompaniesSentimentTableModel extends AbstractTableModel {
 	private String[] tweetCounts;
 	private String[] frequentWordsList;
 	
+	private SwingWorker<String[], Void> counterUpdater;
+	
 	private void updateLists() {
 		tickerList = sentiment.getCompaniesTickers();
 		tweetCounts = new String[tickerList.length+1];
@@ -80,7 +82,11 @@ public class CompaniesSentimentTableModel extends AbstractTableModel {
 	}
 	
 	public void updateCounters() {
-		SwingWorker<String[], Void> counterUpdater = new SwingWorker<String[], Void> () {
+		if (counterUpdater != null) {
+			System.err.println("Polling the UI too fast");
+		}
+		
+		counterUpdater = new SwingWorker<String[], Void> () {
 			@Override
 			protected String[] doInBackground() throws Exception {
 				String[] newCounters = new String[tickerList.length+1]; 
@@ -105,10 +111,9 @@ public class CompaniesSentimentTableModel extends AbstractTableModel {
 				} catch (ExecutionException e) {
 					e.printStackTrace();
 				}
+				counterUpdater = null;
 			}
 		};
-		counterUpdater.execute();
-		
 		SwingWorker<String[], Void> wordUpdater = new SwingWorker<String[], Void> () {
 			@Override
 			protected String[] doInBackground() throws Exception {
@@ -153,6 +158,8 @@ public class CompaniesSentimentTableModel extends AbstractTableModel {
 				}
 			}
 		};
+		
+		counterUpdater.execute();
 		wordUpdater.execute();
 	}
 	
