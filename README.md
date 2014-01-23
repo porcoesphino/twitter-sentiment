@@ -6,7 +6,9 @@ With maven installed then after you set up authentication (below) you should be 
 
 > mvn exec:java
 
-If there is an issue finding java version 1.7 you may need to install it or ensure `JAVA_HOME` is set correctly.
+This will execute the main method from `com.porcoesphino.ts.SentimentServer`. This is intended to demonstrate the intended API. There is a gui avaliable for visual debugging / investigation of trends. This is run from `com.porcoesphino.ts.gui.SentimentViewer`
+
+*NOTE*: If there is an issue finding java version 1.7 you may need to install it or ensure `JAVA_HOME` is set correctly.
 
 ## Authentication ##
 
