@@ -1,6 +1,6 @@
 package com.porcoesphino.ts;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -135,7 +135,7 @@ public class CompanyTweetParser {
 		return companiesTweets.getWordFrequency(word);
 	}
 	
-	public List<? extends Set<String>> getNMostFrequentTallies(int n) {
+	public Map<Integer, ? extends Set<String>> getNMostFrequentTallies(int n) {
 		return companiesTweets.getNMostFrequentTallies(n);
 	}
 }

@@ -2,7 +2,7 @@ package com.porcoesphino.ts;
 
 import java.util.Date;
 import java.util.LinkedList;
-import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -83,7 +83,7 @@ public class TweetWindow {
 		return wordFrequencies.getTally(word);
 	}
 	
-	public synchronized List<? extends Set<String>> getNMostFrequentTallies(int n) {
+	public synchronized Map<Integer, ? extends Set<String>> getNMostFrequentTallies(int n) {
 		return wordFrequencies.getNMostFrequentTallySets(n);
 	}
 	

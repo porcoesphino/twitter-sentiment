@@ -2,9 +2,10 @@ package com.porcoesphino.ts;
 
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import com.porcoesphino.ts.AbstractTweetListener;
 import com.porcoesphino.ts.TweetWindow.StatusAndMeta;
 import com.porcoesphino.ts.TweetWindow.Tweet;
 
@@ -109,7 +110,7 @@ public class CompaniesFilter extends AbstractTweetListener{
 		return parser.getWordFrequency(word);
 	}
 	
-	public List<? extends Set<String>> getNMostFrequentTalliesForCompany(String ticker, int n) {
+	public Map<Integer, ? extends Set<String>> getNMostFrequentTalliesForCompany(String ticker, int n) {
 		CompanyTweetParser parser = companyParsers.get(ticker);
 		return parser.getNMostFrequentTallies(n);
 	}

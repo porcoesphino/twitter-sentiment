@@ -1,6 +1,7 @@
 package com.porcoesphino.ts.gui;
 
-import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -53,27 +54,14 @@ public class CompaniesSentimentTableModel extends AbstractTableModel {
 			String[] newWords = new String[tickerList.length+1]; 
 			for (int rowIndex = 0; rowIndex < tickerList.length; rowIndex++) {
 				String ticker = tickerList[rowIndex];
-				List<? extends Set<String>> frequentWords
+				Map<Integer, ? extends Set<String>> frequentWords
 						= sentiment.getNMostFrequentTalliesForCompany(ticker, 10);
-				StringBuilder sb = new StringBuilder();
-				if (frequentWords != null) {
-					for (int level = 0; level<frequentWords.size(); level++) {
-						boolean needFirst = true;
-						for (String word : frequentWords.get(level)) {
-							if (needFirst) {
-								sb.append(sentiment.getWordFrequencyForCompany(ticker, word));
-								sb.append(": ");
-								needFirst = false;
-							}
-							sb.append(word);
-							sb.append(", ");
-						}
-					}
-					if (sb.length() > 2) { 
-						sb.delete(sb.length()-2, sb.length()-1);
-					}
+				if (frequentWords != null && frequentWords.size() > 0) {
+					newWords[rowIndex] = frequentWords.toString();
+					newWords[rowIndex] = newWords[rowIndex].substring(1, newWords[rowIndex].length()-1);
+				} else {
+					newWords[rowIndex] = "";
 				}
-				newWords[rowIndex] = sb.toString();
 			}
 			return newWords;
 		}

@@ -1,9 +1,8 @@
 package com.porcoesphino.ts;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -42,19 +41,27 @@ public class KeyTally<K> {
 			}
 		}
 		
-		// Update tally and update map
+		// Update tally
 		tally = tally + amount;
-		keysToTallies.put(key, tally);
 		
-		// Insert new reference
-		Set<K> wordsWithNewCount = talliesToKeys.get(tally);
-		if (wordsWithNewCount == null) {
-			// Use a HashSet for speed and since
-			// we don't really care about order or iteration
-			wordsWithNewCount = new LinkedHashSet<K>();
-			talliesToKeys.put(tally, wordsWithNewCount);
+		if (tally == 0) {
+			
+			keysToTallies.remove(key);
+			
+		} else {
+			
+			keysToTallies.put(key, tally);
+			
+			// Insert new reference
+			Set<K> wordsWithNewCount = talliesToKeys.get(tally);
+			if (wordsWithNewCount == null) {
+				// Use a HashSet for speed and since
+				// we don't really care about order or iteration
+				wordsWithNewCount = new LinkedHashSet<K>();
+				talliesToKeys.put(tally, wordsWithNewCount);
+			}
+			wordsWithNewCount.add(key);
 		}
-		wordsWithNewCount.add(key);
 	}
 	
 	public Integer getTally(K key) {
@@ -65,45 +72,33 @@ public class KeyTally<K> {
 		return tally;
 	}
 	
-	private List<? extends Set<K>> getNTallySets(int n, Set<Entry<Integer, Set<K>>> entrySet) {
-		ArrayList<Set<K>> result = new ArrayList<Set<K>>();
-		int i = 0;
+	private Map<Integer, Set<K>> getNTallySets(int n, Set<Entry<Integer, Set<K>>> entrySet) {
+		LinkedHashMap<Integer, Set<K>> result = new LinkedHashMap<Integer, Set<K>>();
 		for (Entry<Integer, Set<K>> entry : entrySet) {
 			// Clone this so there is no reference to our internal data.
 			// Use a LinkedHashSet since the penalty for iterating is lower.
-			Set<K> clone = new LinkedHashSet<K>(entry.getValue());
-			result.add(i, clone);
-			i++;
-			if (i == n) {
+			LinkedHashSet<K> clone = new LinkedHashSet<K>(entry.getValue());
+			result.put(entry.getKey(), clone);
+			if (result.size() == n) {
 				break;
 			}
 		}
 		return result;
 	}
 	
-	public List<? extends Set<K>> getNMostFrequentTallySets(int n) {
+	public int roughSpaceUsage() {
+		int total = 0;
+		for (Entry<Integer, Set<K>> entry : talliesToKeys.entrySet()) {
+			total += entry.getValue().size() + 1;
+		}
+		return total + keysToTallies.size();
+	}
+	
+	public Map<Integer, Set<K>> getNMostFrequentTallySets(int n) {
 		return getNTallySets(n, talliesToKeys.descendingMap().entrySet());
 	}
 	
-	public List<? extends Set<K>> getNLeastFrequentTallySets(int n) {
+	public Map<Integer, Set<K>> getNLeastFrequentTallySets(int n) {
 		return getNTallySets(n, talliesToKeys.entrySet());
-	}
-	
-	public void printFrequencyList() {
-		StringBuilder sb = new StringBuilder();
-		for (Entry<Integer, Set<K>> entry : talliesToKeys.entrySet()) {
-			int frequency = entry.getKey();
-			Set<K> wordList = entry.getValue();
-			sb.append(frequency);
-			sb.append(": ");
-			for (K word : wordList) {
-				sb.append(word);
-				sb.append(", ");
-			}
-			sb.delete(sb.length()-2, sb.length()-1);
-			sb.append("\n");
-		}
-		sb.deleteCharAt(sb.length()-1);
-		System.out.println(sb.toString());
 	}
 }

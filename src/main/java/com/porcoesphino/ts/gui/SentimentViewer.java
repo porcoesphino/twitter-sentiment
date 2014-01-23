@@ -27,6 +27,8 @@ import javax.swing.event.ListSelectionListener;
 
 import com.porcoesphino.ts.SandP500Lookup;
 import com.porcoesphino.ts.SentimentServer;
+import com.porcoesphino.ts.gui.ResizesRowsOnScrollChangeListener;
+import com.porcoesphino.ts.gui.SwingHelper;
 
 import net.miginfocom.layout.CC;
 import net.miginfocom.swing.MigLayout;
