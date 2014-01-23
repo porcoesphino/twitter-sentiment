@@ -173,8 +173,10 @@ public class CompaniesSentimentTableModel extends AbstractTableModel {
 			long currentMillis = System.currentTimeMillis();
 			if (nextMessageInMillis < currentMillis) {
 				final double diffInMin = 1;
-				nextMessageInMillis = currentMillis + (long) (diffInMin * 60 * 1000);
-				System.err.println("Polling the UI " + counter + " extra times in the last " + diffInMin + " minutes");
+				nextMessageInMillis = currentMillis 
+						+ (long) (diffInMin * 60 * 1000);
+				System.err.println("Polled the UI " + counter
+						+ " extra times in the last " + diffInMin + " minutes. The system isn't keeping up.");
 				counter = 0;
 			}
 			return;
