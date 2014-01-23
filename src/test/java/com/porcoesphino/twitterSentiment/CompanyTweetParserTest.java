@@ -4,7 +4,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import com.porcoesphino.twitterSentiment.TweetWindow.StatusAndMeta;
+import com.porcoesphino.ts.CompanyTweetParser;
+import com.porcoesphino.ts.TweetWindow.StatusAndMeta;
 
 public class CompanyTweetParserTest {
 

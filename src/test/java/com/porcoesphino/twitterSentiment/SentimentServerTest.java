@@ -1,5 +1,7 @@
 package com.porcoesphino.twitterSentiment;
 
+import com.porcoesphino.ts.SentimentServer;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;

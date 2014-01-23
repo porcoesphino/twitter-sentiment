@@ -5,6 +5,8 @@ import java.text.ParseException;
 
 import org.junit.Test;
 
+import com.porcoesphino.ts.SandP500Lookup;
+
 import static org.junit.Assert.*;
 
 public class SandP500LookupTest {

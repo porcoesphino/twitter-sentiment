@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
+
+import com.porcoesphino.ts.KeyTally;
 public class KeyTallyTest {
 
 	public void testExpectedTallies(KeyTally<String> map, int[] expected) {
