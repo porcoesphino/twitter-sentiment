@@ -1,12 +1,12 @@
-package com.porcoesphino.twitterSentiment.gui;
+package com.porcoesphino.ts.gui;
 
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.SwingWorker;
 import javax.swing.table.AbstractTableModel;
 
-import com.porcoesphino.twitterSentiment.SentimentServer;
-import com.porcoesphino.twitterSentiment.TweetWindow.Tweet;
+import com.porcoesphino.ts.SentimentServer;
+import com.porcoesphino.ts.TweetWindow.Tweet;
 
 /**
  * This TableModel models the tweets sent about a company during the
@@ -16,6 +16,38 @@ import com.porcoesphino.twitterSentiment.TweetWindow.Tweet;
  * @author bodey.baker@gmail.com
  */
 public class TweetViewerTableModel extends AbstractTableModel {
+	
+	private class TweetCollectingSwingWorker extends SwingWorker<Tweet[], Void> {
+		
+		public final String ticker;
+		
+		public TweetCollectingSwingWorker(String ticker) {
+			this.ticker = ticker;
+		}
+
+		@Override
+		protected Tweet[] doInBackground() throws Exception {
+			final Tweet[] tempList;
+			if (ticker == null) {
+				tempList = sentiment.getUnmatchedTweets();
+			} else {
+				tempList = sentiment.getTweetsForCompany(ticker);
+			}
+			return tempList;
+		}
+
+		@Override
+		protected void done() {
+			try {
+				TweetViewerTableModel.this.tweets = get();
+				fireTableDataChanged();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
 	private static final long serialVersionUID = SentimentViewer.serialVersionUID;
 	private final SentimentServer sentiment;
@@ -50,31 +82,7 @@ public class TweetViewerTableModel extends AbstractTableModel {
 		if (jlistWorker != null) {
 			jlistWorker.cancel(true);
 		}
-		jlistWorker = new SwingWorker<Tweet[], Void>() {
-
-			@Override
-			protected Tweet[] doInBackground() throws Exception {
-				final Tweet[] tempList;
-				if (ticker == null) {
-					tempList = sentiment.getUnmatchedTweets();
-				} else {
-					tempList = sentiment.getTweetsForCompany(ticker);
-				}
-				return tempList;
-			}
-
-			@Override
-			protected void done() {
-				try {
-					TweetViewerTableModel.this.tweets = get();
-					fireTableDataChanged();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				} catch (ExecutionException e) {
-					e.printStackTrace();
-				}
-			}
-		};
+		jlistWorker = new TweetCollectingSwingWorker(ticker);
 		jlistWorker.execute();
 	}
 

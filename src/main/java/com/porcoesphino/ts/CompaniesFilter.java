@@ -1,12 +1,12 @@
-package com.porcoesphino.twitterSentiment;
+package com.porcoesphino.ts;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import com.porcoesphino.twitterSentiment.TweetWindow.StatusAndMeta;
-import com.porcoesphino.twitterSentiment.TweetWindow.Tweet;
+import com.porcoesphino.ts.TweetWindow.StatusAndMeta;
+import com.porcoesphino.ts.TweetWindow.Tweet;
 
 import twitter4j.FilterQuery;
 import twitter4j.Status;

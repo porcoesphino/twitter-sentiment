@@ -1,4 +1,4 @@
-package com.porcoesphino.twitterSentiment;
+package com.porcoesphino.ts;
 
 import java.util.ArrayList;
 import java.util.HashMap;

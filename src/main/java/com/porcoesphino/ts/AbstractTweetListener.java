@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.porcoesphino.twitterSentiment;
+package com.porcoesphino.ts;
 
 import twitter4j.StallWarning;
 import twitter4j.StatusDeletionNotice;

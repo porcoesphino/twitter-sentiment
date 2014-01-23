@@ -1,4 +1,4 @@
-package com.porcoesphino.twitterSentiment.gui;
+package com.porcoesphino.ts.gui;
 
 import java.awt.Component;
 import java.awt.Point;

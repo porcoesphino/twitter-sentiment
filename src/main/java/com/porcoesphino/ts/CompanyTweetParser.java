@@ -1,11 +1,11 @@
-package com.porcoesphino.twitterSentiment;
+package com.porcoesphino.ts;
 
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import com.porcoesphino.twitterSentiment.TweetWindow.StatusAndMeta;
-import com.porcoesphino.twitterSentiment.TweetWindow.Tweet;
+import com.porcoesphino.ts.TweetWindow.StatusAndMeta;
+import com.porcoesphino.ts.TweetWindow.Tweet;
 
 /**
  * This class is intended to parse a tweet to test the sentiment. Currently it

@@ -1,4 +1,4 @@
-package com.porcoesphino.twitterSentiment.gui;
+package com.porcoesphino.ts.gui;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -16,7 +16,7 @@ import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
 
-import com.porcoesphino.twitterSentiment.TweetWindow.Tweet;
+import com.porcoesphino.ts.TweetWindow.Tweet;
 
 /**
  * This TableRenderer renders Tweet objects.

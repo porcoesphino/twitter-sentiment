@@ -1,4 +1,4 @@
-package com.porcoesphino.twitterSentiment.gui;
+package com.porcoesphino.ts.gui;
 
 import java.awt.CardLayout;
 import java.awt.EventQueue;
@@ -25,8 +25,8 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import com.porcoesphino.twitterSentiment.SandP500Lookup;
-import com.porcoesphino.twitterSentiment.SentimentServer;
+import com.porcoesphino.ts.SandP500Lookup;
+import com.porcoesphino.ts.SentimentServer;
 
 import net.miginfocom.layout.CC;
 import net.miginfocom.swing.MigLayout;
@@ -218,12 +218,13 @@ public class SentimentViewer {
 		});
 		
 		// Set Timers
-		Timer unreceivedTweetsUpdated = new Timer();
-		unreceivedTweetsUpdated.schedule(new TimerTask() {
+		Timer sentimentIndicatorsUpdater = new Timer();
+		sentimentIndicatorsUpdater.schedule(new TimerTask() {
 			@Override
 			public void run() {
 				unreceivedTweetsIndicator.setText("Unreceived tweets due to track limitation: " +
 					     sentiment.getNumberOfLimitedStatuses());
+				sentimentModel.updateCounters();
 			}
 		}, guiPollingWaitInMilliseconds, guiPollingPeriodInMilliseconds);
 		
@@ -304,13 +305,6 @@ public class SentimentViewer {
 					sentiment.startServer();
 					SwingHelper.resizeTableColumns(sentimentIndicator);
 					cardLayout.last(mainContentPanel);
-					Timer sentimentIndicatorsUpdater = new Timer();
-					sentimentIndicatorsUpdater.schedule(new TimerTask() {
-						@Override
-						public void run() {
-							sentimentModel.updateCounters();
-						}
-					}, guiPollingWaitInMilliseconds, guiPollingPeriodInMilliseconds);
 				} else if (startController.getText().contentEquals(stopMessage)) {
 					startController.setText(startMessage);
 					intervalViewer.setEnabled(true);

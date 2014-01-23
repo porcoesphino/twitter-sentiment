@@ -1,4 +1,4 @@
-package com.porcoesphino.twitterSentiment;
+package com.porcoesphino.ts;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -8,7 +8,7 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.Set;
 
-import com.porcoesphino.twitterSentiment.TweetWindow.Tweet;
+import com.porcoesphino.ts.TweetWindow.Tweet;
 
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;

@@ -1,10 +1,10 @@
-package com.porcoesphino.twitterSentiment.gui;
+package com.porcoesphino.ts.gui;
 
 import java.util.LinkedList;
 
 import javax.swing.table.AbstractTableModel;
 
-import com.porcoesphino.twitterSentiment.SandP500Lookup;
+import com.porcoesphino.ts.SandP500Lookup;
 
 /**
  * This TableModel models S&P companies sorted alphabetically.

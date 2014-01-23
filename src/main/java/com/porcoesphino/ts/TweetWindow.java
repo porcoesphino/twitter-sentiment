@@ -1,4 +1,4 @@
-package com.porcoesphino.twitterSentiment;
+package com.porcoesphino.ts;
 
 import java.util.Date;
 import java.util.LinkedList;
