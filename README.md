@@ -37,5 +37,5 @@ To disable logging, this line can be added to the above file `twitter4j.loggerFa
 
  - Think about using [Gradle][]
 
-[Twitter Developers]: https://dev.twitter.com/apps
-[Gradle]: www.gradle.org
+[Twitter Developers]: //dev.twitter.com/apps
+[Gradle]: //www.gradle.org
