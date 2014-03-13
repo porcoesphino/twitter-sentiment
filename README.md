@@ -33,4 +33,9 @@ To disable logging, this line can be added to the above file `twitter4j.loggerFa
  - If there is an internal expception, twitter4J can get brought down
  - OAuth could be used for authentication
 
+## TODO ##
+
+ - Think about using [Gradle][]
+
 [Twitter Developers]: https://dev.twitter.com/apps
+[Gradle]: www.gradle.org
